@@ -1,0 +1,43 @@
+name: local-env
+channels:
+  - defaults
+  - pytorch
+  - conda-forge
+dependencies:
+  - pip
+  - numpy
+  - scipy
+  - scikit-learn
+  - pytorch
+  - ray-default
+  - ray-data
+  - ray-train
+  - seaborn
+  - dash
+  - jinja2
+  - pip
+  - matplotlib
+  - ruff
+  - scikit-build
+  - tqdm
+  - debugpy
+  - pandas
+  - pillow
+  - cmake
+  - dash
+  - dash-bootstrap-components
+  - dash-core-components
+  - dash-html-components
+  - dash-table
+  - pytest-playwright
+  - flask
+  - flask-login
+  - flask-caching
+  - flask-compress
+  - Django
+  - pip:
+      - dash-uploader
+      - dash-uploader==0.7.0a1
+      - ezc3d==1.5.17
+      - pynvim
+      - virtualenv

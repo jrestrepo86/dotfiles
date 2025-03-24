@@ -1,0 +1,9 @@
+known_hosts
+mc/.config/mc/panels.ini
+mc/.local/share/mc/history
+*packer_compiled.lua
+*menu
+lazyvim.json
+lazy-lock.json
+bitBucketToken.txt
+gitHubToken.txt

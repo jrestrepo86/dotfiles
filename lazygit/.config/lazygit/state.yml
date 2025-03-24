@@ -1,0 +1,27 @@
+lastupdatecheck: 0
+recentrepos:
+    - /home/jrestrepo/Dropbox/sadosky/codes/specific_NMKS_interface
+    - /home/jrestrepo/Dropbox/scripts/dotfiles
+    - /home/jrestrepo/Dropbox/inv/codes/minepy
+    - /home/jrestrepo/Dropbox/inv/toeMine
+    - /home/jrestrepo/Dropbox/inv/toeMineHealthy
+    - /home/jrestrepo/Dropbox/Uner/materias/Calculo/clases-calculo
+    - /home/jrestrepo/Dropbox/Curriculum-Vitae
+    - /home/jrestrepo/Dropbox/inv/codes/lz-partial-transfer-entropy
+    - /home/jrestrepo/Dropbox/Uner/materias/Algebra/clases-algebra
+    - /home/jrestrepo/Dropbox/inv/codes/LCIT
+    - /home/jrestrepo/Dropbox/inv/codes/SINDyAutoencoders
+    - /home/jrestrepo/Dropbox/scripts/simulationconfig
+    - /home/jrestrepo/Dropbox/inv/parseSleepDB
+startuppopupversion: 5
+lastversion: 0.43.1
+customcommandshistory:
+    - q
+hidecommandlog: false
+ignorewhitespaceindiffview: false
+diffcontextsize: 3
+renamesimilaritythreshold: 50
+localbranchsortorder: recency
+remotebranchsortorder: alphabetical
+gitlogorder: topo-order
+gitlogshowgraph: always
