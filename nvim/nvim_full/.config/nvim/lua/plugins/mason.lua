@@ -4,7 +4,6 @@ return {
 		opts = {
 			ensure_installed = {
 				"prettierd",
-				"prettier",
 				"eslint_d",
 				-- python
 				"pyright",
@@ -17,6 +16,7 @@ return {
 				"djlint",
 				-- lua
 				"luaformatter",
+				"stylua",
 				"selene",
 				"luacheck",
 				-- latex
@@ -34,6 +34,7 @@ return {
 				-- markdown
 				"markdownlint-cli2",
 				"markdown-toc",
+				"vale",
 				-- shell
 				"shellcheck",
 				"shfmt",

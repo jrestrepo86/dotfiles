@@ -8,6 +8,35 @@ local map = function(mode, lhs, rhs, opts)
 	vim.keymap.set(mode, lhs, rhs, options)
 end
 
+-- Save key strokes (now we do not need to press shift to enter command mode).
+map({ "n", "x" }, ";", function()
+	-- Use Noice's command line if available, otherwise fallback
+	local ok = pcall(require, "noice")
+	if ok and require("noice").visible then
+		vim.api.nvim_feedkeys(":", "n", true)
+	else
+		-- Directly trigger command line with proper escaping
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(":", true, true, true), "n", true)
+	end
+end, {
+	noremap = true,
+	silent = true,
+	desc = "Show command line with Noice",
+})
+
+-- Turn the word under cursor to upper case
+map("i", "<c-u>", "<Esc>viwUea")
+
+-- Turn the current word into title case
+map("i", "<c-t>", "<Esc>b~lea")
+
+-- Go to the beginning and end of current line in insert mode quickly
+map("i", "<C-A>", "<HOME>", { desc = "Go to the beginning" })
+map("i", "<C-E>", "<END>", { desc = "Go to the end" })
+
+-- Don't yank on visual paste
+map("v", "p", '"_dP', { silent = true })
+
 -- navigation
 map("n", "<C-Up>", "<C-w>k", { desc = "Window up" })
 map("n", "<C-Left>", "<C-w>h", { desc = "Window left" })
@@ -31,10 +60,13 @@ map({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Clear hlsearch and ESC
 
 -- save like your are used to
 map({ "i", "v", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
+
 -- Select all text
 map("n", "<Localleader>e", "gg<S-V>G", { desc = "Select all Text", silent = true, noremap = true })
+
 -- U for redo
 map("n", "U", "<C-r>", { desc = "Redo" })
+
 -- Deleting without yanking empty line
 map("n", "dd", function()
 	local is_empty_line = vim.api.nvim_get_current_line():match("^%s*$")
@@ -44,6 +76,7 @@ map("n", "dd", function()
 		return "dd"
 	end
 end, { noremap = true, expr = true, desc = "Don't Yank Empty Line to Clipboard" })
+
 --comments
 map("n", "<Localleader>-", "<ESC><cmd>lua require('Comment.api').toggle.linewise()<CR>", { desc = "Toogle comment" })
 map(
@@ -61,7 +94,8 @@ map(
 )
 
 -- Split
-map("n", "Localleader<bar>", ":vsp<cr>", { desc = "Same file vertical split" })
+map("n", "<Localleader>v", ":vsp<cr>", { desc = "Same file vertical split" })
+map("n", "<Localleader>s", ":sp<cr>", { desc = "Same file split" })
 
 --stylua: ignore start
 map("n", "<leader>dd", function() require("dap").continue() end, { desc = "Continue" })

@@ -8,9 +8,12 @@ return {
 			javascriptreact = { "eslint_d" },
 			typescriptreact = { "eslint_d" },
 			svelte = { "eslint_d" },
-			python = { "pylint" },
+			-- python = { "pylint" },
 			bash = { "shellcheck" },
 			sh = { "shellcheck" },
+			dockerfile = { "hadolint" },
+			-- https://stackoverflow.com/questions/62369711/how-to-install-hadolint-on-ubuntu
+			makrdown = { "markdownlint-cli2", "vale" },
 		},
 		linters = {
 			selene = {

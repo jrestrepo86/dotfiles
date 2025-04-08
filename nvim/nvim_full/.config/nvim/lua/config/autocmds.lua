@@ -55,13 +55,10 @@ cmd("FileType", {
 		vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = event.buf, silent = true })
 	end,
 })
-
 -- Python options
 cmd({ "BufEnter", "BufWinEnter", "FileType", "WinEnter" }, {
 	pattern = "*.py",
 	callback = function()
-		vim.bo.textwidth = 87
-		vim.wo.colorcolumn = "+1"
 		vim.opt.expandtab = true -- convert tabs to spaces
 		vim.opt.shiftwidth = 4 -- the number of spaces inserted for each indentation
 		vim.opt.tabstop = 4 -- insert 4 spaces for a tab
@@ -69,6 +66,8 @@ cmd({ "BufEnter", "BufWinEnter", "FileType", "WinEnter" }, {
 		vim.opt.wrap = false
 		vim.opt.sidescrolloff = 2 -- Makes sure there are always eight lines of context
 		vim.opt.sidescroll = 5
+		vim.bo.textwidth = 87
+		vim.wo.colorcolumn = "+1"
 	end,
 })
 
@@ -106,6 +105,7 @@ cmd({ "BufEnter", "BufWinEnter", "FileType", "WinEnter" }, {
 	callback = function()
 		vim.bo.textwidth = 80
 		vim.wo.colorcolumn = "+1"
+		vim.opt.conceallevel = 2 -- Show `` in specific files
 		-- do not close the preview tab when switching to other buffers
 		vim.g.mkdp_auto_close = 0
 	end,
