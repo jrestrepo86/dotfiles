@@ -1,11 +1,11 @@
 local Util = require("lazyvim.util")
 
 local map = function(mode, lhs, rhs, opts)
-	local options = { noremap = true, silent = true }
-	if opts then
-		options = vim.tbl_extend("force", options, opts)
-	end
-	vim.keymap.set(mode, lhs, rhs, options)
+  local options = { noremap = true, silent = true }
+  if opts then
+    options = vim.tbl_extend("force", options, opts)
+  end
+  vim.keymap.set(mode, lhs, rhs, options)
 end
 
 -- navigation
@@ -31,37 +31,42 @@ map({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Clear hlsearch and ESC
 
 -- save like your are used to
 map({ "i", "v", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
+
 -- Select all text
 map("n", "<Localleader>e", "gg<S-V>G", { desc = "Select all Text", silent = true, noremap = true })
+
 -- U for redo
 map("n", "U", "<C-r>", { desc = "Redo" })
+
 -- Deleting without yanking empty line
 map("n", "dd", function()
-	local is_empty_line = vim.api.nvim_get_current_line():match("^%s*$")
-	if is_empty_line then
-		return '"_dd'
-	else
-		return "dd"
-	end
+  local is_empty_line = vim.api.nvim_get_current_line():match("^%s*$")
+  if is_empty_line then
+    return '"_dd'
+  else
+    return "dd"
+  end
 end, { noremap = true, expr = true, desc = "Don't Yank Empty Line to Clipboard" })
+
 --comments
 map("n", "<Localleader>-", "<ESC><cmd>lua require('Comment.api').toggle.linewise()<CR>", { desc = "Toogle comment" })
 map(
-	"v",
-	"<Localleader>-",
-	"<ESC><cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>",
-	{ desc = "Toogle Comment" }
+  "v",
+  "<Localleader>-",
+  "<ESC><cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>",
+  { desc = "Toogle Comment" }
+
 )
 map("n", "<Localleader>/", "<ESC><cmd>lua require('Comment.api').toggle.linewise()<CR>", { desc = "Toogle comment" })
 map(
-	"v",
-	"<Localleader>/",
-	"<ESC><cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>",
-	{ desc = "Toogle Comment" }
+  "v",
+  "<Localleader>/",
+  "<ESC><cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>",
+  { desc = "Toogle Comment" }
 )
 
 -- Split
-map("n", "Localleader<bar>", ":vsp<cr>", { desc = "Same file vertical split" })
+-- map("n", "Localleader<bar>", ":vsp<cr>", { desc = "Same file vertical split" })
 
 --stylua: ignore start
 map("n", "<leader>dd", function() require("dap").continue() end, { desc = "Continue" })
@@ -73,19 +78,19 @@ map("n", "<S-Up>", function() require("dap").toggle_breakpoint() end, { desc = "
 
 -- custom
 map("n", "<Localleader>.", function()
-	local lineNum, pos = unpack(vim.api.nvim_win_get_cursor(0))
-	local line = vim.api.nvim_get_current_line()
-	local message = "Juan Felipe Restrepo <juan.restrepo@under.edu.ar>"
-	local date = tostring(os.date("%Y-%m-%d"))
-	local nline = line:sub(1, pos) .. message .. line:sub(pos + 1)
-	vim.api.nvim_set_current_line(nline)
-	-- Insert the date on a new line below
-	vim.api.nvim_buf_set_lines(0, lineNum, lineNum, false, { date })
-	-- Comment both lines
-	require("Comment.api").toggle.linewise.current() -- Comment the signature line
-	vim.api.nvim_win_set_cursor(0, { lineNum + 1, 0 }) -- Move cursor to new date line
-	require("Comment.api").toggle.linewise.current() -- Comment the date line
-	vim.api.nvim_win_set_cursor(0, { lineNum, pos })
+  local lineNum, pos = unpack(vim.api.nvim_win_get_cursor(0))
+  local line = vim.api.nvim_get_current_line()
+  local message = "Juan Felipe Restrepo <juan.restrepo@under.edu.ar>"
+  local date = tostring(os.date("%Y-%m-%d"))
+  local nline = line:sub(1, pos) .. message .. line:sub(pos + 1)
+  vim.api.nvim_set_current_line(nline)
+  -- Insert the date on a new line below
+  vim.api.nvim_buf_set_lines(0, lineNum, lineNum, false, { date })
+  -- Comment both lines
+  require("Comment.api").toggle.linewise.current()  -- Comment the signature line
+  vim.api.nvim_win_set_cursor(0, { lineNum + 1, 0 }) -- Move cursor to new date line
+  require("Comment.api").toggle.linewise.current()  -- Comment the date line
+  vim.api.nvim_win_set_cursor(0, { lineNum, pos })
 end, { desc = "Print author info" })
 
 -- Spells
@@ -96,21 +101,21 @@ map("n", "<Localleader>ze", ":setlocal spell spelllang=en<CR> :set mousemodel=po
 map("n", "<leader>cif", "<cmd>LazyFormatInfo<cr>", { desc = "Formatting" })
 map("n", "<leader>cic", "<cmd>ConformInfo<cr>", { desc = "Conform" })
 local linters = function()
-	local linters_attached = require("lint").linters_by_ft[vim.bo.filetype]
-	local buf_linters = {}
+  local linters_attached = require("lint").linters_by_ft[vim.bo.filetype]
+  local buf_linters = {}
 
-	if not linters_attached then
-		LazyVim.warn("No linters attached", { title = "Linter" })
-		return
-	end
+  if not linters_attached then
+    LazyVim.warn("No linters attached", { title = "Linter" })
+    return
+  end
 
-	for _, linter in pairs(linters_attached) do
-		table.insert(buf_linters, linter)
-	end
+  for _, linter in pairs(linters_attached) do
+    table.insert(buf_linters, linter)
+  end
 
-	local unique_client_names = table.concat(buf_linters, ", ")
-	local linters = string.format("%s", unique_client_names)
+  local unique_client_names = table.concat(buf_linters, ", ")
+  local linters = string.format("%s", unique_client_names)
 
-	LazyVim.notify(linters, { title = "Linter" })
+  LazyVim.notify(linters, { title = "Linter" })
 end
 map("n", "<leader>ciL", linters, { desc = "Lint" })
