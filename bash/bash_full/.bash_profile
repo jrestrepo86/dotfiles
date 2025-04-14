@@ -19,7 +19,9 @@ PATH="$HOME/.cargo/bin:$PATH"
 PATH="$HOME/.local/go/bin:$PATH"
 export GOPATH="$HOME/.local/go"
 ## miniconda
-PATH="$HOME/.local/share/miniconda/bin:$PATH"
+CONDA_PATH="$HOME/.local/share/miniconda/bin"
+PATH="$CONDA_PATH:$PATH"
+
 ## pnpm
 export PNPM_HOME="/home/jrestrepo/.local/share/pnpm"
 PATH="$PNPM_HOME:$PATH"
@@ -187,7 +189,7 @@ complete -F _complete_ollama ollama
 # conda activate base
 activate_base() {
   # Activate conda base environment with proper error handling
-  local activate_script="$HOME/.local/share/miniconda/bin/activate"
+  local activate_script="$CONDA_PATH/activate"
 
   if [[ -f "$activate_script" ]]; then
     source "$activate_script" base || {
@@ -204,3 +206,9 @@ if ! activate_base; then
   # Handle activation failure
   echo "Conda activation failed, proceeding without it"
 fi
+
+# # Auto-Warpify
+# # printf ''
+# if [ -n "${PS1:-}" ]; then
+#   printf '^[P$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "bash", "uname": "Linux" }}<9c>'
+# fi
