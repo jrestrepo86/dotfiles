@@ -3,6 +3,7 @@ return {
 		"williamboman/mason.nvim",
 		opts = {
 			ensure_installed = {
+				"prettier",
 				"prettierd",
 				"eslint_d",
 				-- python
@@ -15,7 +16,6 @@ return {
 				"django-template-lsp",
 				"djlint",
 				-- lua
-				"luaformatter",
 				"stylua",
 				"selene",
 				"luacheck",
@@ -57,6 +57,7 @@ return {
 				-- sql
 				"sqls",
 				"sql-formatter",
+				"sqlfluff",
 				-- xml
 				"xmlformatter",
 			},

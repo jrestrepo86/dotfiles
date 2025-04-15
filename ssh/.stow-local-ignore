@@ -1,2 +1,6 @@
 ignore
 /.ssh/known_hosts
+/.ssh/authorized_keys
+/.ssh/*.pub
+/.ssh/*.old
+/.ssh/id*
