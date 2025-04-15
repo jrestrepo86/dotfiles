@@ -202,10 +202,10 @@ activate_base() {
     return 1
   fi
 }
-if ! activate_base; then
-  # Handle activation failure
-  echo "Conda activation failed, proceeding without it"
-fi
+# if ! activate_base; then
+#   # Handle activation failure
+#   echo "Conda activation failed, proceeding without it"
+# fi
 
 # # Auto-Warpify
 # # printf ''

@@ -99,6 +99,18 @@ Open=%var{EDITOR:nvim} %f
 View=%var{EDITOR:nvim} %f
 ```
 
+## mermaid charts
+
+```bash
+npm install -g @mermaid-js/mermaid-cli
+```
+
+## Tree-sitter
+
+```bash
+cargo install --locked tree-sitter-cli
+```
+
 ## Dotfyles
 
 - [link](https://dotfyle.com/)

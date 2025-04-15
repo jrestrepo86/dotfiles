@@ -56,7 +56,7 @@ map("n", "<TAB>", ":bnext<cr>", { desc = "Tab next" })
 -- map("n", "<A-Down>", ":bprevious<cr>", { desc = "Tab pre" })
 
 -- Cancel search highlighting with ESC
-map({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Clear hlsearch and ESC" })
+-- map({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Clear hlsearch and ESC" })
 
 -- save like your are used to
 map({ "i", "v", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
