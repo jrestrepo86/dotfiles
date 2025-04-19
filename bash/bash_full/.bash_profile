@@ -15,6 +15,7 @@ HISTFILESIZE=2000
 PATH="$HOME/.local/bin:$PATH"
 ## cargo
 PATH="$HOME/.cargo/bin:$PATH"
+source "$HOME/.cargo/env"
 ## go
 PATH="$HOME/.local/go/bin:$PATH"
 export GOPATH="$HOME/.local/go"

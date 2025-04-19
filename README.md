@@ -81,10 +81,46 @@ pip install django-browser-reload
 
 ## LazyVim Setup
 
+- Install cargo
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
 - Install Tree-sitter CLI (required for LazyVim)
 
 ```bash
-npm install -g tree-sitter-cli
+cargo install --locked tree-sitter-cli
+```
+
+- Install mermaid charts
+
+```bash
+npm install -g @mermaid-js/mermaid-cli
+```
+
+- Install imagemagick
+
+```bash
+sudo apt install imagemagick
+```
+
+- Install neovim nmp
+
+```bash
+npm install neovimp
+```
+
+- Install pynvim
+
+```bash
+pip install pynvim
+```
+
+- Install neovim ruby gem
+
+```bash
+sudo gem install neovim
 ```
 
 ## Midnight Commander Configuration
@@ -97,18 +133,6 @@ Add these lines at the end:
 ```ini
 Open=%var{EDITOR:nvim} %f
 View=%var{EDITOR:nvim} %f
-```
-
-## mermaid charts
-
-```bash
-npm install -g @mermaid-js/mermaid-cli
-```
-
-## Tree-sitter
-
-```bash
-cargo install --locked tree-sitter-cli
 ```
 
 ## Dotfyles
