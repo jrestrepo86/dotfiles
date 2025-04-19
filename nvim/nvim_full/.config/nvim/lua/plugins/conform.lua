@@ -3,7 +3,7 @@ return {
 		"stevearc/conform.nvim",
 		opts = {
 			formatters_by_ft = {
-				python = { "ruff_organize_imports", "black" },
+				python = { "ruff_fix", "ruff_organize_imports", "ruff_format" },
 				css = { "prettier" },
 				scss = { "prettier" },
 				html = { "prettier" },

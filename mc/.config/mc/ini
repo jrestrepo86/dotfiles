@@ -98,7 +98,7 @@ free_space=true
 horizontal_equal=true
 horizontal_split=false
 keybar_visible=true
-left_panel_size=79
+left_panel_size=59
 menubar_visible=true
 message_visible=false
 output_lines=0
@@ -152,7 +152,7 @@ show_symbols=false
 tab_size=8
 
 [Panelize]
-Find *.orig after patching=find . -name \\*.orig -print
 Modified git files=git ls-files --modified
 Find rejects after patching=find . -name \\*.rej -print
+Find *.orig after patching=find . -name \\*.orig -print
 Find SUID and SGID programs=find . \\( \\( -perm -04000 -a -perm /011 \\) -o \\( -perm -02000 -a -perm /01 \\) \\) -print
