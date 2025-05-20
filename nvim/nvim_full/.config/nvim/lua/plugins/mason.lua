@@ -15,6 +15,9 @@ return {
 				"debugpy",
 				"django-template-lsp",
 				"djlint",
+				-- toml
+				"taplo",
+				"pyproject-fmt",
 				-- lua
 				"stylua",
 				"selene",

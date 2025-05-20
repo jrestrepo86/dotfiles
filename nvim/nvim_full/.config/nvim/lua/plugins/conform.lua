@@ -3,7 +3,7 @@ return {
 		"stevearc/conform.nvim",
 		opts = {
 			formatters_by_ft = {
-				python = { "ruff_fix", "ruff_organize_imports", "ruff_format" },
+				python = { "ruff_organize_imports", "ruff_format" },
 				css = { "prettier" },
 				scss = { "prettier" },
 				html = { "prettier" },
@@ -15,7 +15,16 @@ return {
 				lua = { "stylua" },
 				sql = { "sql_formatter" },
 				xml = { "xmlformatter" },
+				toml = { "taplo", "pyproject-fmt" },
 			},
+			-- formatters = {
+			-- 	ruff_fix = {
+			-- 		args = { "--ignore", "F401" },
+			-- 	},
+			-- 	ruff_organize_imports = {
+			-- 		args = { "--ignore", "F401" },
+			-- 	},
+			-- },
 		},
 	},
 }

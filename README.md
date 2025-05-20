@@ -93,10 +93,11 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install --locked tree-sitter-cli
 ```
 
-- Install mermaid charts
+- Install mermaid charts (mejor instalar por pnpm)
 
 ```bash
-npm install -g @mermaid-js/mermaid-cli
+npm install -g pnpm@latest-10
+pnpm install -g @mermaid-js/mermaid-cli
 ```
 
 - Install imagemagick
@@ -108,7 +109,7 @@ sudo apt install imagemagick
 - Install neovim nmp
 
 ```bash
-npm install neovimp
+npm install neovim
 ```
 
 - Install pynvim

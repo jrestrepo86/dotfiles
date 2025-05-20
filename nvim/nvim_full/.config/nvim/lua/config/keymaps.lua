@@ -64,6 +64,9 @@ map({ "i", "v", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
 -- Select all text
 map("n", "<Localleader>e", "gg<S-V>G", { desc = "Select all Text", silent = true, noremap = true })
 
+-- Duplicate line and comment the first line
+map("n", "ycc", "yygccp", { remap = true })
+
 -- U for redo
 map("n", "U", "<C-r>", { desc = "Redo" })
 

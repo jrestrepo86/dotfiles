@@ -6,8 +6,9 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = "."
 
-vim.g.python3_host_prog = "/bin/python"
+vim.g.python3_host_prog = "/bin/python3"
 vim.g.ruby_host_prog = "/usr/local/bin/neovim-ruby-host"
+vim.g.loaded_perl_provider = 0
 
 -- cambiar config a dropbox
 -- local old_stdpath = vim.fn.stdpath

@@ -15,10 +15,26 @@ return {
 		"rjshkhr/shadow.nvim",
 		lazy = false,
 	},
+	{
+		"webhooked/kanso.nvim",
+		lazy = false,
+		priority = 1000,
+	},
 	{ "EdenEast/nightfox.nvim", lazy = false },
 	{ "mistweaverco/retro-theme.nvim", lazy = false },
 	{ "nyoom-engineering/oxocarbon.nvim", lazy = false },
 	{ "joshdick/onedark.vim", lazy = false },
+	{
+		"metalelf0/black-metal-theme-neovim",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			require("black-metal").setup({
+				-- optional configuration here
+			})
+			require("black-metal").load()
+		end,
+	},
 	{
 		"catppuccin/nvim",
 		lazy = false,
