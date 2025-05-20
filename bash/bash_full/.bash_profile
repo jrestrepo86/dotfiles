@@ -14,18 +14,27 @@ HISTFILESIZE=2000
 ## bin
 PATH="$HOME/.local/bin:$PATH"
 ## cargo
-PATH="$HOME/.cargo/bin:$PATH"
-source "$HOME/.cargo/env"
+# PATH="$HOME/.cargo/bin:$PATH"
+# source "$HOME/.cargo/env"
 ## go
 PATH="$HOME/.local/go/bin:$PATH"
 export GOPATH="$HOME/.local/go"
 ## miniconda
-CONDA_PATH="$HOME/.local/share/miniconda/bin"
+export CONDA_PATH="$HOME/.local/share/miniconda/bin"
 PATH="$CONDA_PATH:$PATH"
-
+## cargo
+export CARGO_HOME="$HOME/.local/share/cargo"
+export RUSTUP_HOME="$HOME/.local/share/rustup"
+source "$CARGO_HOME/env"
+PATH="$CARGO_HOME/bin:$PATH"
 ## pnpm
 export PNPM_HOME="/home/jrestrepo/.local/share/pnpm"
 PATH="$PNPM_HOME:$PATH"
+# nvm
+export NVM_DIR="$HOME/.local/share/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+
 export PATH
 ##-----------------------------------------------------
 ## Editor
@@ -134,7 +143,7 @@ if [ -f ~/.bash_aliases ] || [ -L ~/.bash_aliases ]; then
 fi
 
 ##-----------------------------------------------------
-## Bash completition
+## Bash completion
 ##-----------------------------------------------------
 if ! shopt -oq posix; then
   if [ -f /usr/share/bash-completion/bash_completion ]; then
@@ -146,10 +155,6 @@ if ! shopt -oq posix; then
   fi
 fi
 ##-----------------------------------------------------
-# nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
 
 # !! Contents within this block are managed by juliaup !!
 case ":$PATH:" in

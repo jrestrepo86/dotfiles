@@ -140,3 +140,63 @@ View=%var{EDITOR:nvim} %f
 ## Dotfyles
 
 - [link](https://dotfyle.com/)
+
+- cargo
+
+```
+bash
+# Set custom installation directories
+export CARGO_HOME="$HOME/.local/share/cargo"
+export RUSTUP_HOME="$HOME/.local/share/rustup"
+
+# Install Rust (Cargo included) to custom path
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# Add Cargo to current PATH
+export PATH="$CARGO_HOME/bin:$PATH"
+
+# (Optional) Add to shell config for future sessions
+echo 'export CARGO_HOME="$HOME/.local/share/cargo"' >> ~/.bashrc
+echo 'export RUSTUP_HOME="$HOME/.local/share/rustup"' >> ~/.bashrc
+echo 'export PATH="$HOME/.local/share/cargo/bin:$PATH"' >> ~/.bashrc
+```
+
+- pnpm
+
+```
+bash
+# Set installation path
+export PNPM_HOME="$HOME/.local/share/pnpm"
+mkdir -p "$PNPM_HOME"
+
+# Download and run the pnpm installer
+curl -fsSL https://get.pnpm.io/install.sh | env PNPM_HOME="$PNPM_HOME" SHELL="$(which sh)" sh -
+
+# Add PNPM to current PATH
+export PATH="$PNPM_HOME:$PATH"
+
+# (Optional) Add to shell config for future sessions
+echo 'export PNPM_HOME="$HOME/.local/share/pnpm"' >> ~/.bashrc
+echo 'export PATH="$PNPM_HOME:$PATH"' >> ~/.bashrc
+```
+
+- nvm
+
+```
+bash
+# Set target installation path
+export NVM_DIR="$HOME/.local/share/nvm"
+mkdir -p "$NVM_DIR"
+
+# Install nvm to that location
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | NVM_DIR="$NVM_DIR" bash
+
+# Add to shell config for future sessions
+echo 'export NVM_DIR="$HOME/.local/share/nvm"' >> ~/.bashrc
+echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc
+echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc
+
+# For current shell session
+export NVM_DIR="$HOME/.local/share/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+```
