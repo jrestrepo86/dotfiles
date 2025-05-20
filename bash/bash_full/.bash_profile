@@ -213,3 +213,6 @@ activate_base() {
 # if [ -n "${PS1:-}" ]; then
 #   printf '^[P$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "bash", "uname": "Linux" }}<9c>'
 # fi
+
+export ML_LOGGER_ROOT="http://localhost:8081"
+export ML_LOGGER_USER=$USER

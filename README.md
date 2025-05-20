@@ -22,8 +22,9 @@ stow -Dvt ~ folder
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # Make executable
 chmod +x Miniconda3-latest-Linux-x86_64.sh
+
 # Run installer (follow prompts)
-./Miniconda3-latest-Linux-x86_64.sh
+./Miniconda3-latest-Linux-x86_64.sh -b -p ~/.local/share/miniconda
 ```
 
 ## Node.js Version Manager (nvm)
