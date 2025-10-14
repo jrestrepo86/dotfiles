@@ -1,0 +1,44 @@
+[user]
+  name = jrestrepo
+  email = jrestrepo@uner.edu.ar
+[core]
+  editor = nvim
+[init]
+	# Name the default branch "main", not "master". #BlackLivesMatter
+	defaultBranch = main
+; [diff]
+;   tool = nvimdiff
+; [difftool "nvimdiff"]
+;   cmd = nvim -d $LOCAL $REMOTE
+[commit]
+  verbose = true
+[color]
+  ; ui = always
+  ; branch = always
+  diff = always
+  interactive = always
+  status = always
+  grep = always
+  pager = true
+  decorate = always
+  showbranch = always
+[format]
+  pretty = format:%C(yellow)%h %Cblue%>(12)%ad %Cgreen%<(7)%aN%Cred%d %Creset%s
+[alias]
+  la = "!git config -l | grep alias | cut -c 7-"
+  co = checkout
+  nb = checkout -b
+  s = status
+  st = status -sb
+  sv = status -v
+  ghubreset = !git fetch && git reset --hard origin/main
+  greset = !git fetch && git reset --hard origin/master
+[credential]
+	helper = cache
+[init]
+	defaultBranch = main
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

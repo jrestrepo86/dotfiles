@@ -1,0 +1,34 @@
+Host neptuno neptuno2
+  HostName cluster.ingenieria.uner.edu.ar
+  User jrestrepo
+  ForwardX11 yes
+  ForwardX11Trusted yes
+
+Host neptuno2
+  Port 77
+
+# Jupiter (connect through neptuno variants)
+Host jupiter Jupiter
+  HostName 192.168.26.108
+  User jrestrepo
+  ForwardX11 yes
+  ForwardX11Trusted yes
+
+Host jupiter
+  ProxyCommand ssh neptuno -W %h:%p
+
+Host Jupiter
+  ProxyCommand ssh neptuno2 -W %h:%p
+
+# Root access to Jupiter
+Host rootJupiter rootJupiter2
+  HostName 192.168.26.108
+  User root
+  ForwardX11 yes
+  ForwardX11Trusted yes
+
+Host rootJupiter
+  ProxyCommand ssh neptuno -W %h:%p
+
+Host rootJupiter2
+  ProxyCommand ssh neptuno2 -W %h:%p
