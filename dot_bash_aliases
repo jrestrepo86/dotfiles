@@ -1,0 +1,23 @@
+# ALIAS
+# Force grep to always use the color option and show line numbers
+# alias sq='squeue --format="%.5i %.9P %.12j %.9u %.5t %.10M %R"'
+# alias ns='nvidia-smi'
+alias cat='batcat --paging=never'
+alias grep='grep --color=auto'
+alias mkdir='mkdir -p'
+alias h='history'
+alias hg='history | grep'
+alias nv='nvim'
+alias update='sudo apt update'
+alias upgrade='sudo apt dist-upgrade'
+alias ls='lsd -a --group-dirs=first'
+alias ll='lsd -lh --group-dirs=first'
+# c: Clear terminal display
+alias c='clear'
+
+alias cv='cenv'
+alias c0='cdeact --all'     # fully deactivate
+alias cb='cdeact --to-base' # back to base
+
+alias wezterm="wezterm start --always-new-process"
+alias venvactivate='source $(find . -name "activate" -type f)'
