@@ -77,6 +77,11 @@ fi
 export GITHUB_USERNAME="jrestrepo86"
 # Token file locations (using proper path expansion)
 GITHUB_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/gitHubToken.txt"
+
+# SRC="$(chezmoi source-path ~/.config/gh/gitHubToken.txt)"
+# export GITHUB_TOKEN="$(chezmoi decrypt "$SRC")"
+# gh auth login --with-token < <(chezmoi cat ~/.config/gh/gitHubToken.txt)
+
 BITBUCKET_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/bitBucketToken.txt"
 # Secure token handling functions
 gtoken() {
