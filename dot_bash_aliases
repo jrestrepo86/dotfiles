@@ -13,11 +13,10 @@ alias upgrade='sudo apt dist-upgrade'
 alias ls='lsd -a --group-dirs=first'
 alias ll='lsd -lh --group-dirs=first'
 # c: Clear terminal display
-alias c='clear'
+alias c="printf '\033c'"
 
 alias cv='cenv'
 alias c0='cdeact --all'     # fully deactivate
 alias cb='cdeact --to-base' # back to base
 
-alias wezterm="wezterm start --always-new-process"
 alias venvactivate='source $(find . -name "activate" -type f)'

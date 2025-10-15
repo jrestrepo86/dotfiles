@@ -15,21 +15,21 @@ HISTFILESIZE=2000
 ## Path settings
 ##-----------------------------------------------------
 ## bin
-PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 ## go
-PATH="$HOME/.local/go/bin:$PATH"
+export PATH="$HOME/.local/go/bin:$PATH"
 export GOPATH="$HOME/.local/go"
 ## miniconda
-export CONDA_PATH="$HOME/.local/share/miniconda/bin"
-PATH="$CONDA_PATH:$PATH"
+export CONDA_DIR="$HOME/.local/share/miniconda/bin"
+export PATH="$CONDA_DIR:$PATH"
 ## cargo
 export CARGO_HOME="$HOME/.local/share/cargo"
 export RUSTUP_HOME="$HOME/.local/share/rustup"
 source "$CARGO_HOME/env"
-PATH="$CARGO_HOME/bin:$PATH"
+export PATH="$CARGO_HOME/bin:$PATH"
 ## pnpm
 export PNPM_HOME="$HOME/.local/share/pnpm"
-PATH="$PNPM_HOME:$PATH"
+export PATH="$PNPM_HOME:$PATH"
 # nvm
 export NVM_DIR="$HOME/.local/share/nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
@@ -38,7 +38,7 @@ export NVM_DIR="$HOME/.local/share/nvm"
 export PATH=$HOME/.opencode/bin:$PATH
 # Lm-Studio
 export LM_API_KEY="lm-studio"
-export PATH="$PATH:$HOME/.lmstudio/bin"
+export PATH="$HOME/.lmstudio/bin:$PATH:"
 
 ##-----------------------------------------------------
 ## Editor
@@ -48,7 +48,7 @@ export VISUAL="$EDITOR"
 ##-----------------------------------------------------
 ## Git
 ##-----------------------------------------------------
-# Load git completion, handling symlinks properly
+## Load git completion, handling symlinks properly
 GIT_COMPLETION="$HOME/.git-completion.bash"
 if [[ -e "$GIT_COMPLETION" ]]; then
   if [[ -L "$GIT_COMPLETION" ]]; then
@@ -83,7 +83,7 @@ GITHUB_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/gitHubToken.txt"
 # gh auth login --with-token < <(chezmoi cat ~/.config/gh/gitHubToken.txt)
 
 BITBUCKET_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/bitBucketToken.txt"
-# Secure token handling functions
+## Secure token handling functions
 gtoken() {
   if [[ -r "$GITHUB_TOKEN_FILE" ]]; then
     cat "$GITHUB_TOKEN_FILE"
@@ -137,7 +137,8 @@ ff() {
   [ -n "$dir" ] && cd "$dir" || return
 }
 
-# Load conda hook on demand, no auto-activation
+
+## Load conda hook on demand, no auto-activation
 _load_conda_hook() {
   local shname="$(basename "$SHELL")"
   eval "$("conda" "shell.${shname}" "hook" 2>/dev/null)" ||
@@ -145,7 +146,23 @@ _load_conda_hook() {
       [ -f "$base/etc/profile.d/conda.sh" ] &&
       . "$base/etc/profile.d/conda.sh"; } || return 1
 }
-# Fast deactivate: one level (default), --to-base, or --all
+
+## Fast activate conda env
+cenv() {
+  _load_conda_hook || {
+    echo "Run: conda init $(basename "$SHELL")"
+    return 1
+  }
+  local env
+  env="$(
+    conda info --envs 2>/dev/null |
+      awk 'NF && $1 !~ /^#/ {print $1}' |
+      fzf +m --prompt='conda env > ' --select-1 --exit-0
+  )" || return
+  [ -n "$env" ] && conda activate "$env"
+}
+
+## Fast deactivate: one level (default), --to-base, or --all
 cdeact() {
   _load_conda_hook || {
     echo "Run: conda init $(basename "$SHELL")" >&2
@@ -169,20 +186,8 @@ cdeact() {
     ;;
   esac
 }
-cenv() {
-  _load_conda_hook || {
-    echo "Run: conda init $(basename "$SHELL")"
-    return 1
-  }
-  local env
-  env="$(
-    conda info --envs 2>/dev/null |
-      awk 'NF && $1 !~ /^#/ {print $1}' |
-      fzf +m --prompt='conda env > ' --select-1 --exit-0
-  )" || return
-  [ -n "$env" ] && conda activate "$env"
-}
 
+## fast config pick
 cfgpick() {
   local base="${XDG_CONFIG_HOME:-$HOME/.config}"
   [ -d "$base" ] || {
