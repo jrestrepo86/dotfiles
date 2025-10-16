@@ -41,7 +41,8 @@ echo "Installing conda packages..."
   debugpy \
   cmake \
   fzf \
-  "starship>=1.23.0"
+  "starship>=1.23.0" \
+  mc
 
 # Optional: Create a named environment with specific packages
 # Uncomment and modify as needed

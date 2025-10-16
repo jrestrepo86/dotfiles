@@ -30,15 +30,18 @@ export PATH="$CARGO_HOME/bin:$PATH"
 ## pnpm
 export PNPM_HOME="$HOME/.local/share/pnpm"
 export PATH="$PNPM_HOME:$PATH"
-# nvm
+## nvm
 export NVM_DIR="$HOME/.local/share/nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
-# opencode
+## opencode
 export PATH=$HOME/.opencode/bin:$PATH
-# Lm-Studio
+## Lm-Studio
 export LM_API_KEY="lm-studio"
 export PATH="$HOME/.lmstudio/bin:$PATH:"
+## Ruby
+export GEM_HOME="$HOME/.local/share/gem"
+export PATH="$GEM_HOME/ruby/$(ruby -e 'puts RbConfig::CONFIG["ruby_version"]')/bin:$PATH"
 
 ##-----------------------------------------------------
 ## Editor
