@@ -37,26 +37,16 @@ gui:
       - white
     selectedLineBgColor:
       - blue
-    selectedRangeBgColor:
-      - blue
 git:
-  # Paging settings
-  paging:
-    colorArg: always
-    pager: less -R
-  # Commit settings (verbose like your .gitconfig)
+  # Commit settings
   commit:
     signOff: false
-    verbose: always
   # Merge settings
   merging:
     # Manual commit after merge
     manualCommit: false
     # Args for merge command
     args: ""
-  # Pull settings
-  pull:
-    mode: merge # or "rebase" or "ff-only"
   # Skip hook prefix (skip pre-commit hooks for commits starting with this)
   skipHookPrefix: WIP
   # Auto fetch from remote
@@ -85,8 +75,6 @@ confirmOnQuit: false
 quitOnTopLevelReturn: false
 # Disable startup popup
 notARepository: prompt
-# Command log size
-commandLogSize: 8
 # Custom commands (examples)
 customCommands:
   - key: "<c-g>"

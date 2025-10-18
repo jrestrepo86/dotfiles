@@ -43,7 +43,6 @@ echo "Installing conda packages..."
   fzf \
   "starship>=1.23.0" \
   mc \
-  glances \
   lazygit
 
 # Optional: Create a named environment with specific packages
