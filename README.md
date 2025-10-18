@@ -1,4 +1,4 @@
-# Set Up **chezmoi** on a Second Machine
+# Set Up CHEZMOI on a Second Machine
 
 ## 0. Prerequisites
 

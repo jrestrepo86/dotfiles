@@ -17,8 +17,10 @@ HISTFILESIZE=2000
 ## bin
 export PATH="$HOME/.local/bin:$PATH"
 ## go
-export PATH="$HOME/.local/go/bin:$PATH"
+export GOROOT="$HOME/.local/share/go"
+export PATH="$GOROOT/bin:$PATH"
 export GOPATH="$HOME/.local/go"
+export PATH="$GOPATH/bin:$PATH"
 ## miniconda
 export CONDA_DIR="$HOME/.local/share/miniconda/bin"
 export PATH="$CONDA_DIR:$PATH"

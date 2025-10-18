@@ -1,0 +1,180 @@
+gui:
+  # Scroll settings
+  scrollHeight: 2
+  scrollPastBottom: true
+  scrollOffMargin: 2
+  # Visual settings
+  showFileTree: true
+  showRandomTip: true
+  showCommandLog: true
+  showBottomLine: true
+  showPanelJumps: true
+  # Nerd fonts icons (set to "3" if you have Nerd Fonts installed)
+  nerdFontsVersion: "3"
+  # Show icons in file views
+  showIcons: true
+  # Commit display
+  commitLength:
+    show: true
+  # Author display
+  commitAuthorShortLength: 2
+  commitAuthorLongLength: 17
+  commitHashLength: 8
+  # Show branch commit hash
+  showBranchCommitHash: false
+  # Split diff view
+  splitDiff: auto
+  # Screen mode
+  screenMode: normal
+  # Border style: single, double, rounded, hidden
+  border: rounded
+  # Theme
+  theme:
+    activeBorderColor:
+      - green
+      - bold
+    inactiveBorderColor:
+      - white
+    selectedLineBgColor:
+      - blue
+    selectedRangeBgColor:
+      - blue
+git:
+  # Paging settings
+  paging:
+    colorArg: always
+    pager: less -R
+  # Commit settings (verbose like your .gitconfig)
+  commit:
+    signOff: false
+    verbose: always
+  # Merge settings
+  merging:
+    # Manual commit after merge
+    manualCommit: false
+    # Args for merge command
+    args: ""
+  # Pull settings
+  pull:
+    mode: merge # or "rebase" or "ff-only"
+  # Skip hook prefix (skip pre-commit hooks for commits starting with this)
+  skipHookPrefix: WIP
+  # Auto fetch from remote
+  autoFetch: true
+  # Auto refresh files
+  autoRefresh: true
+  # Branch checkout sorting
+  branchLogCmd: "git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --"
+  # All branches fetch
+  fetchAll: true
+  # Main branches (for special treatment)
+  mainBranches:
+    - master
+    - main
+  # Override git command
+  overrideGpg: false
+  # Disable force pushing
+  disableForcePushing: false
+# Update settings
+update:
+  method: prompt # prompt, background, never
+  days: 7
+# Confirmation settings
+confirmOnQuit: false
+# Quit without confirm
+quitOnTopLevelReturn: false
+# Disable startup popup
+notARepository: prompt
+# Command log size
+commandLogSize: 8
+# Custom commands (examples)
+customCommands:
+  - key: "<c-g>"
+    context: "localBranches"
+    command: "git fetch && git reset --hard origin/{{.SelectedLocalBranch.Name}}"
+    description: "Hard reset to origin (like your greset/ghubreset)"
+    prompts:
+      - type: "confirm"
+        title: "Hard reset to origin"
+        body: "Reset {{.SelectedLocalBranch.Name}} to origin/{{.SelectedLocalBranch.Name}}?"
+  - key: "<c-r>"
+    context: "files"
+    command: "git reset --hard HEAD"
+    description: "Hard reset to HEAD"
+    prompts:
+      - type: "confirm"
+        title: "Hard reset"
+        body: "Are you sure you want to hard reset to HEAD? This will discard all changes."
+# OS settings
+os:
+  editPreset: "nvim"
+  edit: "nvim {{filename}}"
+  editAtLine: "nvim +{{line}} {{filename}}"
+  editAtLineAndWait: "nvim +{{line}} {{filename}}"
+  open: "xdg-open {{filename}}"
+  openLink: "xdg-open {{link}}"
+# Keybinding
+keybinding:
+  universal:
+    quit: "q"
+    quit-alt1: "<c-c>"
+    return: "<esc>"
+    quitWithoutChangingDirectory: "Q"
+    togglePanel: "<tab>"
+    prevItem: "<up>"
+    nextItem: "<down>"
+    prevItem-alt: "k"
+    nextItem-alt: "j"
+    prevPage: ","
+    nextPage: "."
+    scrollLeft: "H"
+    scrollRight: "L"
+    gotoTop: "<"
+    gotoBottom: ">"
+    toggleRangeSelect: "v"
+    rangeSelectDown: "<s-down>"
+    rangeSelectUp: "<s-up>"
+    prevBlock: "<left>"
+    nextBlock: "<right>"
+    prevBlock-alt: "h"
+    nextBlock-alt: "l"
+    nextMatch: "n"
+    prevMatch: "N"
+    startSearch: "/"
+    optionMenu: "x"
+    optionMenu-alt1: "?"
+    select: "<space>"
+    goInto: "<enter>"
+    confirm: "<enter>"
+    remove: "d"
+    new: "n"
+    edit: "e"
+    openFile: "o"
+    scrollUpMain: "<pgup>"
+    scrollDownMain: "<pgdown>"
+    scrollUpMain-alt1: "K"
+    scrollDownMain-alt1: "J"
+    scrollUpMain-alt2: "<c-u>"
+    scrollDownMain-alt2: "<c-d>"
+    executeShellCommand: ":"
+    createRebaseOptionsMenu: "m"
+    pushFiles: "P"
+    pullFiles: "p"
+    refresh: "R"
+    createPatchOptionsMenu: "<c-p>"
+    nextTab: "]"
+    prevTab: "["
+    nextScreenMode: "+"
+    prevScreenMode: "_"
+    undo: "z"
+    redo: "<c-z>"
+    filteringMenu: "<c-s>"
+    diffingMenu: "W"
+    diffingMenu-alt: "<c-e>"
+    copyToClipboard: "<c-o>"
+    openRecentRepos: "<c-r>"
+    submitEditorText: "<enter>"
+    extrasMenu: "@"
+    toggleWhitespaceInDiffView: "<c-w>"
+    increaseContextInDiffView: "}"
+    decreaseContextInDiffView: "{"

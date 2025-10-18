@@ -17,7 +17,7 @@ echo "Installing conda packages..."
 # Add conda-forge channel
 "$CONDA_BIN" config --add channels conda-forge
 "$CONDA_BIN" config --add channels pytorch
-"$CONDA_BIN" config --set channel_priority strict
+"$CONDA_BIN" config --set channel_priority flexible
 
 # Update conda itself
 "$CONDA_BIN" update -n base -c defaults conda -y
@@ -42,7 +42,9 @@ echo "Installing conda packages..."
   cmake \
   fzf \
   "starship>=1.23.0" \
-  mc
+  mc \
+  glances \
+  lazygit
 
 # Optional: Create a named environment with specific packages
 # Uncomment and modify as needed
