@@ -232,3 +232,16 @@ chezmoi git pull -- --autostash --rebase && chezmoi apply
 | `chezmoi cd`          | Navigate to source directory    |
 | `chezmoi doctor`      | Diagnose configuration issues   |
 | `chezmoi cat <file>`  | View target file content        |
+
+## Update Nvim
+
+```bash
+# Remove the installed version
+rm -rf ~/.local/share/nvim ~/.local/bin/nvim
+
+# Clear chezmoi's script state to allow re-run
+chezmoi state delete-bucket --bucket=scriptState
+
+# Re-apply (will fetch latest version)
+chezmoi apply
+```
