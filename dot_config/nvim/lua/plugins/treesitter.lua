@@ -28,6 +28,10 @@ return {
 				"ninja",
 				"rst",
 				"diff",
+				"scss",
+				"svelte",
+				"typst",
+				"vue",
 			})
 		end,
 	},

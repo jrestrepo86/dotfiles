@@ -10,7 +10,7 @@ NVIM_CONFIG="$HOME/.config/nvim"
 
 echo "Installing LazyVim dependencies..."
 
-# 1. Install mermaid-cli via pnpm
+# Install mermaid-cli via pnpm
 if [ -f "$PNPM_HOME/pnpm" ]; then
   echo "Installing @mermaid-js/mermaid-cli..."
   "$PNPM_HOME/pnpm" install -g @mermaid-js/mermaid-cli
@@ -18,7 +18,7 @@ else
   echo "Warning: pnpm not found, skipping mermaid-cli installation"
 fi
 
-# 2. Install neovim package via pnpm
+# Install neovim package via pnpm
 if [ -f "$PNPM_HOME/pnpm" ]; then
   echo "Installing neovim package via pnpm..."
   "$PNPM_HOME/pnpm" install -g neovim
@@ -26,7 +26,15 @@ else
   echo "Warning: pnpm not found, skipping neovim package installation"
 fi
 
-# 3. Install pynvim via pip
+# Install fd-find via cargo
+if [ -f "$CARGO_HOME/bin/cargo" ]; then
+  echo "Installing fd-find..."
+  "$CARGO_HOME/bin/cargo" install fd-find
+else
+  echo "Warning: cargo not found, skipping fd-find installation"
+fi
+
+# Install pynvim via pip
 if [ -f "$MINICONDA_DIR/bin/pip" ]; then
   echo "Installing pynvim..."
   "$MINICONDA_DIR/bin/pip" install pynvim
@@ -34,7 +42,7 @@ else
   echo "Warning: pip not found, skipping pynvim installation"
 fi
 
-# 4 & 6. Install neovim gem via gem (combined, no sudo needed)
+# Install neovim gem via gem (combined, no sudo needed)
 if [ -f "$MINICONDA_DIR/bin/gem" ]; then
   echo "Installing neovim gem..."
   "$MINICONDA_DIR/bin/gem" install neovim
@@ -42,7 +50,7 @@ else
   echo "Warning: gem not found, skipping neovim gem installation"
 fi
 
-# 5. Install tree-sitter-cli via cargo
+# Install tree-sitter-cli via cargo
 if [ -f "$CARGO_HOME/bin/cargo" ]; then
   echo "Installing tree-sitter-cli (this may take a while)..."
   "$CARGO_HOME/bin/cargo" install --locked tree-sitter-cli
