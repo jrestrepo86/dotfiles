@@ -25,7 +25,33 @@
 # ==========================
 # # The config file consists of simple key-value pairs,
 # # separated by equals signs.
+# font-family = Iosevka Term Extended Regular
+# font-size = 12
 font-family = Iosevka Term Nerd Font
+font-size = 12
+
+adjust-icon-height = 11
+adjust-cell-height = 3
+# Font features
+font-feature = "+calt"     # keep contextual ligatures
+font-feature = "+ss08"     # (optional) Pragmata Pro style variant
+font-feature = "+cv83=1"   # (optional) better lowercase 'l'
+font-feature = "+cv86=1"   # (optional) better zero with dot
+
+# Quick reload when you edit this file
+keybind = ctrl+shift+comma=reload_config
+# --- Split navigation (avoid Ctrl+Alt+Arrows on Ubuntu) ---
+keybind = ctrl+super+left=goto_split:left
+keybind = ctrl+super+right=goto_split:right
+keybind = ctrl+super+up=goto_split:up
+keybind = ctrl+super+down=goto_split:down
+# --- Optional: resize current split ---
+keybind = ctrl+super+shift+left=resize_split:left,40
+keybind = ctrl+super+shift+right=resize_split:right,40
+keybind = ctrl+super+shift+up=resize_split:up,40
+keybind = ctrl+super+shift+down=resize_split:down,40
+# Equalize all splits instantly
+keybind = ctrl+super+==equalize_splits
 # window-padding-x = 2
 #
 # # Spacing around the equals sign does not matter.
@@ -48,4 +74,5 @@ font-family = Iosevka Term Nerd Font
 # # Just for example:
 # resize-overlay-duration = 4s 200ms
 
-theme = Carbonfox
+# theme = Carbonfox
+theme = Monokai Pro Spectrum
