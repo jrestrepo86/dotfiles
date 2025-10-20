@@ -8,48 +8,62 @@ shopt -s histappend
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
 HISTSIZE=1000
 HISTFILESIZE=2000
-##-----------------------------------------------------
-## Keys
-##-----------------------------------------------------
+
 ##-----------------------------------------------------
 ## Path settings
 ##-----------------------------------------------------
 ## bin
 export PATH="$HOME/.local/bin:$PATH"
+
 ## go
 export GOROOT="$HOME/.local/share/go"
 export PATH="$GOROOT/bin:$PATH"
 export GOPATH="$HOME/.local/go"
 export PATH="$GOPATH/bin:$PATH"
+
 ## miniconda
 export CONDA_DIR="$HOME/.local/share/miniconda/bin"
 export PATH="$CONDA_DIR:$PATH"
+
 ## cargo
 export CARGO_HOME="$HOME/.local/share/cargo"
 export RUSTUP_HOME="$HOME/.local/share/rustup"
-source "$CARGO_HOME/env"
+if [ -f "$CARGO_HOME/env" ]; then
+  source "$CARGO_HOME/env"
+fi
 export PATH="$CARGO_HOME/bin:$PATH"
+
 ## pnpm
 export PNPM_HOME="$HOME/.local/share/pnpm"
 export PATH="$PNPM_HOME:$PATH"
+
 ## nvm
 export NVM_DIR="$HOME/.local/share/nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+
 ## opencode
 export PATH=$HOME/.opencode/bin:$PATH
+
 ## Lm-Studio
 export LM_API_KEY="lm-studio"
 export PATH="$HOME/.lmstudio/bin:$PATH:"
-## Ruby
+
+## Ruby - Safe version detection
 export GEM_HOME="$HOME/.local/share/gem"
-export PATH="$GEM_HOME/ruby/$(ruby -e 'puts RbConfig::CONFIG["ruby_version"]')/bin:$PATH"
+if command -v ruby &>/dev/null; then
+  RUBY_VERSION=$(ruby -e 'puts RbConfig::CONFIG["ruby_version"]' 2>/dev/null)
+  if [ -n "$RUBY_VERSION" ] && [ -d "$GEM_HOME/ruby/$RUBY_VERSION/bin" ]; then
+    export PATH="$GEM_HOME/ruby/$RUBY_VERSION/bin:$PATH"
+  fi
+fi
 
 ##-----------------------------------------------------
 ## Editor
 ##-----------------------------------------------------
 export EDITOR=nvim
 export VISUAL="$EDITOR"
+
 ##-----------------------------------------------------
 ## Git
 ##-----------------------------------------------------
@@ -79,15 +93,13 @@ else
     source "$SYSTEM_GIT_COMPLETION"
   fi
 fi
+
 export GITHUB_USERNAME="jrestrepo86"
+
 # Token file locations (using proper path expansion)
 GITHUB_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/gitHubToken.txt"
-
-# SRC="$(chezmoi source-path ~/.config/gh/gitHubToken.txt)"
-# export GITHUB_TOKEN="$(chezmoi decrypt "$SRC")"
-# gh auth login --with-token < <(chezmoi cat ~/.config/gh/gitHubToken.txt)
-
 BITBUCKET_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/bitBucketToken.txt"
+
 ## Secure token handling functions
 gtoken() {
   if [[ -r "$GITHUB_TOKEN_FILE" ]]; then
@@ -116,8 +128,7 @@ btoken() {
     return 1
   fi
 }
-# Export only if needed by other scripts
-# export GITHUB_TOKEN_FILE BITBUCKET_TOKEN_FILE
+
 ##-----------------------------------------------------
 ## Functions
 ##-----------------------------------------------------
@@ -127,12 +138,15 @@ cdf() {
   local dir
   file=$(fzf -e -q "$*") && dir=$(dirname "$file") && cd "$dir" || return
 }
+
 ## cdh() - cd from home
 cdh() {
   local file
   local dir
   file=$(locate ~ | fzf -e -q "$*") && dir=$(dirname "$file") && cd "$dir" || return
 }
+
+## ff() - Fast find directory
 ff() {
   local query="${*:-}" dir
   dir="$(
@@ -141,7 +155,6 @@ ff() {
   )" || return
   [ -n "$dir" ] && cd "$dir" || return
 }
-
 
 ## Load conda hook on demand, no auto-activation
 _load_conda_hook() {
@@ -204,21 +217,19 @@ cfgpick() {
     fzf +m --prompt='~/.config/ ' --select-1 --exit-0 \
       --preview 'ls -la {} | sed -n "1,200p"'
 }
+
 cfg() {
   local p
   p="$(cfgpick)" || return
   [ -n "$p" ] && cd "$p"
 }
 
-# -----------------------------------------------------------
-
-# ----------------------------------------------
-
 ## matlab
 function matlab() {
   export GTK_PATH='/usr/lib/x86_64-linux-gnu/gtk-2.0'
   command matlab "$@"
 }
+
 ##-----------------------------------------------------
 ## Alias
 ##-----------------------------------------------------
@@ -241,18 +252,21 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
-##-----------------------------------------------------
 
+##-----------------------------------------------------
+## Julia
+##-----------------------------------------------------
 # !! Contents within this block are managed by juliaup !!
 case ":$PATH:" in
 *:/home/jrestrepo/.juliaup/bin:*) ;;
-
 *)
   export PATH=/home/jrestrepo/.juliaup/bin${PATH:+:${PATH}}
   ;;
 esac
 
-# llama autocomplete
+##-----------------------------------------------------
+## Ollama autocomplete
+##-----------------------------------------------------
 _complete_ollama() {
   local cur prev words cword
   _init_completion -n : || return
@@ -278,14 +292,3 @@ _complete_ollama() {
   fi
 }
 complete -F _complete_ollama ollama
-
-# if ! activate_base; then
-#   # Handle activation failure
-#   echo "Conda activation failed, proceeding without it"
-# fi
-
-# # Auto-Warpify
-# # printf ''
-# if [ -n "${PS1:-}" ]; then
-#   printf '^[P$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "bash", "uname": "Linux" }}<9c>'
-# fi

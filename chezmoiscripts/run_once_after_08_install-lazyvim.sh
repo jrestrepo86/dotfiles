@@ -1,6 +1,5 @@
 #!/bin/bash
-# Save this as: .chezmoiscripts/run_once_after_install-lazyvim.sh
-
+# LazyVim dependencies - depends on pnpm (05), cargo (03), miniconda (01)
 set -e
 
 MINICONDA_DIR="$HOME/.local/share/miniconda"
@@ -9,68 +8,116 @@ CARGO_HOME="$HOME/.local/share/cargo"
 NVIM_CONFIG="$HOME/.config/nvim"
 
 echo "Installing LazyVim dependencies..."
+echo ""
+
+# Track what's missing
+MISSING_DEPS=()
+
+# Check dependencies
+if [ ! -f "$PNPM_HOME/pnpm" ]; then
+  echo "Warning: pnpm not found at $PNPM_HOME"
+  MISSING_DEPS+=("pnpm")
+fi
+
+if [ ! -f "$CARGO_HOME/bin/cargo" ]; then
+  echo "Warning: cargo not found at $CARGO_HOME"
+  MISSING_DEPS+=("cargo")
+fi
+
+if [ ! -f "$MINICONDA_DIR/bin/pip" ]; then
+  echo "Warning: pip not found at $MINICONDA_DIR"
+  MISSING_DEPS+=("pip")
+fi
+
+if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
+  echo ""
+  echo "Missing dependencies: ${MISSING_DEPS[*]}"
+  echo "Some LazyVim features may not work properly"
+  echo ""
+fi
 
 # Install mermaid-cli via pnpm
 if [ -f "$PNPM_HOME/pnpm" ]; then
   echo "Installing @mermaid-js/mermaid-cli..."
-  "$PNPM_HOME/pnpm" install -g @mermaid-js/mermaid-cli
-else
-  echo "Warning: pnpm not found, skipping mermaid-cli installation"
-fi
+  if "$PNPM_HOME/pnpm" install -g @mermaid-js/mermaid-cli; then
+    echo "✓ mermaid-cli installed"
+  else
+    echo "✗ mermaid-cli installation failed"
+  fi
 
-# Install neovim package via pnpm
-if [ -f "$PNPM_HOME/pnpm" ]; then
   echo "Installing neovim package via pnpm..."
-  "$PNPM_HOME/pnpm" install -g neovim
+  if "$PNPM_HOME/pnpm" install -g neovim; then
+    echo "✓ neovim package installed"
+  else
+    echo "✗ neovim package installation failed"
+  fi
 else
-  echo "Warning: pnpm not found, skipping neovim package installation"
+  echo "Skipping pnpm packages (pnpm not available)"
 fi
 
 # Install fd-find via cargo
 if [ -f "$CARGO_HOME/bin/cargo" ]; then
   echo "Installing fd-find..."
-  "$CARGO_HOME/bin/cargo" install fd-find
+  if "$CARGO_HOME/bin/cargo" install fd-find; then
+    echo "✓ fd-find installed"
+  else
+    echo "✗ fd-find installation failed"
+  fi
+
+  echo "Installing tree-sitter-cli (this may take a while)..."
+  if "$CARGO_HOME/bin/cargo" install --locked tree-sitter-cli; then
+    echo "✓ tree-sitter-cli installed"
+  else
+    echo "✗ tree-sitter-cli installation failed"
+  fi
 else
-  echo "Warning: cargo not found, skipping fd-find installation"
+  echo "Skipping cargo packages (cargo not available)"
 fi
 
 # Install pynvim via pip
 if [ -f "$MINICONDA_DIR/bin/pip" ]; then
   echo "Installing pynvim..."
-  "$MINICONDA_DIR/bin/pip" install pynvim
+  if "$MINICONDA_DIR/bin/pip" install pynvim; then
+    echo "✓ pynvim installed"
+  else
+    echo "✗ pynvim installation failed"
+  fi
 else
-  echo "Warning: pip not found, skipping pynvim installation"
+  echo "Skipping python packages (pip not available)"
 fi
 
-# Install neovim gem via gem (combined, no sudo needed)
+# Install neovim gem via gem
 if [ -f "$MINICONDA_DIR/bin/gem" ]; then
   echo "Installing neovim gem..."
-  "$MINICONDA_DIR/bin/gem" install neovim
+  if "$MINICONDA_DIR/bin/gem" install neovim; then
+    echo "✓ neovim gem installed"
+  else
+    echo "✗ neovim gem installation failed"
+  fi
 else
-  echo "Warning: gem not found, skipping neovim gem installation"
+  echo "Skipping ruby packages (gem not available)"
 fi
 
-# Install tree-sitter-cli via cargo
-if [ -f "$CARGO_HOME/bin/cargo" ]; then
-  echo "Installing tree-sitter-cli (this may take a while)..."
-  "$CARGO_HOME/bin/cargo" install --locked tree-sitter-cli
-else
-  echo "Warning: cargo not found, skipping tree-sitter-cli installation"
-fi
-
-# 7. Install LazyVim
-# Note: Your nvim config should be managed by chezmoi in dot_config/nvim/
-# This will be handled by chezmoi apply, which will copy your config
-
-# 8. Backup existing nvim config if it exists and is not managed by chezmoi
+# Backup existing nvim config if it exists and is not managed by chezmoi
 if [ -d "$NVIM_CONFIG" ] && [ ! -L "$NVIM_CONFIG" ]; then
-  echo "Backing up existing nvim config..."
-  mv "$NVIM_CONFIG" "$NVIM_CONFIG.backup.$(date +%Y%m%d_%H%M%S)"
+  BACKUP_DIR="$NVIM_CONFIG.backup.$(date +%Y%m%d_%H%M%S)"
+  echo ""
+  echo "Backing up existing nvim config to $BACKUP_DIR"
+  mv "$NVIM_CONFIG" "$BACKUP_DIR"
 fi
 
-echo "LazyVim dependencies installed successfully!"
+echo ""
+echo "LazyVim dependencies installation complete!"
+echo ""
+echo "Installation summary:"
+echo "-------------------"
+[ -f "$PNPM_HOME/mmdc" ] && echo "✓ mermaid-cli" || echo "✗ mermaid-cli"
+[ -f "$CARGO_HOME/bin/fd" ] && echo "✓ fd-find" || echo "✗ fd-find"
+[ -f "$CARGO_HOME/bin/tree-sitter" ] && echo "✓ tree-sitter-cli" || echo "✗ tree-sitter-cli"
+"$MINICONDA_DIR/bin/pip" show pynvim &>/dev/null && echo "✓ pynvim" || echo "✗ pynvim"
+"$MINICONDA_DIR/bin/gem" list neovim &>/dev/null && echo "✓ neovim gem" || echo "✗ neovim gem"
 echo ""
 echo "Next steps:"
-echo "1. Make sure your nvim config is in chezmoi: ~/.local/share/chezmoi/dot_config/nvim/"
-echo "2. Run 'chezmoi apply' to deploy your nvim config"
-echo "3. Launch nvim - LazyVim will install plugins on first run"
+echo "1. Your nvim config is managed by chezmoi at ~/.local/share/chezmoi/dot_config/nvim/"
+echo "2. Launch nvim - LazyVim will install plugins on first run"
+echo "3. Run :checkhealth in nvim to verify everything works"
