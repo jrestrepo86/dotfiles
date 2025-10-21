@@ -4,7 +4,7 @@
 set -e
 
 FONTS_DIR="$HOME/.local/share/fonts"
-TMP_DIR="/tmp/nerdfonts-install-$"
+TMP_DIR="/tmp/nerdfonts-install-$$"
 
 # List of fonts to install
 # Edit this array to add/remove fonts you want
@@ -47,23 +47,27 @@ echo ""
 # Counters for summary
 TOTAL_FONTS=${#FONTS_TO_INSTALL[@]}
 INSTALLED_FONTS=0
+SKIPPED_FONTS=0
 FAILED_FONTS=()
 TOTAL_FILES=0
 
 # Install each font
 for FONT_NAME in "${FONTS_TO_INSTALL[@]}"; do
   echo "=========================================="
-  echo "Installing: ${FONT_NAME}"
+  echo "Processing: ${FONT_NAME}"
   echo "=========================================="
 
   cd "$TMP_DIR"
 
   # Check if font is already installed
   if fc-list | grep -i "${FONT_NAME}.*Nerd" >/dev/null 2>&1; then
-    echo "⚠ ${FONT_NAME} Nerd Font appears to be already installed"
+    echo "✓ ${FONT_NAME} Nerd Font already installed - skipping download"
     echo "Existing variants:"
     fc-list | grep -i "${FONT_NAME}.*Nerd" | cut -d: -f2 | sort -u | head -5
     echo ""
+    INSTALLED_FONTS=$((INSTALLED_FONTS + 1))
+    SKIPPED_FONTS=$((SKIPPED_FONTS + 1))
+    continue
   fi
 
   # Download font
@@ -105,23 +109,29 @@ for FONT_NAME in "${FONTS_TO_INSTALL[@]}"; do
   echo ""
 done
 
-# Update font cache
-echo "=========================================="
-echo "Updating font cache..."
-echo "=========================================="
-if command -v fc-cache >/dev/null 2>&1; then
-  # Create cache directory if it doesn't exist
-  mkdir -p "$HOME/.cache/fontconfig"
+# Update font cache only if new fonts were installed
+if [ $SKIPPED_FONTS -lt $TOTAL_FONTS ]; then
+  echo "=========================================="
+  echo "Updating font cache..."
+  echo "=========================================="
+  if command -v fc-cache >/dev/null 2>&1; then
+    # Create cache directory if it doesn't exist
+    mkdir -p "$HOME/.cache/fontconfig"
 
-  # Try to update cache, but don't fail if it errors
-  if fc-cache -f "$FONTS_DIR" 2>&1; then
-    echo "✓ Font cache updated"
+    # Try to update cache, but don't fail if it errors
+    if fc-cache -f "$FONTS_DIR" 2>&1; then
+      echo "✓ Font cache updated"
+    else
+      echo "⚠ Font cache update had issues, but fonts are installed"
+      echo "  Fonts will still work after restarting applications"
+    fi
   else
-    echo "⚠ Font cache update had issues, but fonts are installed"
-    echo "  Fonts will still work after restarting applications"
+    echo "⚠ fc-cache not found. You may need to restart applications"
   fi
 else
-  echo "⚠ fc-cache not found. You may need to restart applications"
+  echo "=========================================="
+  echo "All fonts already installed - skipping cache update"
+  echo "=========================================="
 fi
 
 # Clean up temp directory
@@ -132,9 +142,14 @@ echo ""
 echo "=========================================="
 echo "Installation Summary"
 echo "=========================================="
-echo "Total fonts attempted: ${TOTAL_FONTS}"
-echo "Successfully installed: ${INSTALLED_FONTS}"
-echo "Total font files: ${TOTAL_FILES}"
+echo "Total fonts requested: ${TOTAL_FONTS}"
+echo "Already installed (skipped): ${SKIPPED_FONTS}"
+echo "Newly installed: $((INSTALLED_FONTS - SKIPPED_FONTS))"
+echo "Total installed: ${INSTALLED_FONTS}"
+
+if [ $TOTAL_FILES -gt 0 ]; then
+  echo "New font files added: ${TOTAL_FILES}"
+fi
 
 if [ ${#FAILED_FONTS[@]} -gt 0 ]; then
   echo ""
@@ -152,7 +167,10 @@ echo "  - Terminal: Set font to 'JetBrains Mono Nerd Font'"
 echo "  - Nvim: Set font to 'Hack Nerd Font Mono'"
 echo ""
 echo "To see all installed fonts: fc-list | grep 'Nerd Font'"
-echo ""
-echo "⚠ Note: Restart applications for changes to take effect"
+
+if [ $SKIPPED_FONTS -lt $TOTAL_FONTS ]; then
+  echo ""
+  echo "⚠ Note: Restart applications for new fonts to take effect"
+fi
 
 exit 0
