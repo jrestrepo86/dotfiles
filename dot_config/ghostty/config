@@ -25,54 +25,63 @@
 # ==========================
 # # The config file consists of simple key-value pairs,
 # # separated by equals signs.
-# font-family = Iosevka Term Extended Regular
-# font-size = 12
 font-family = Iosevka Term Nerd Font
-font-size = 12
+# Other good options:
+# font-family = FiraCode Nerd Font Mono
+# font-family = Hack Nerd Font Mono
+# font-family = MesloLGS Nerd Font Mono
+# font-family = UbuntuMono Nerd Font Mono
 
-adjust-icon-height = 11
-adjust-cell-height = 3
-# Font features
-font-feature = "+calt"     # keep contextual ligatures
-font-feature = "+ss08"     # (optional) Pragmata Pro style variant
-font-feature = "+cv83=1"   # (optional) better lowercase 'l'
-font-feature = "+cv86=1"   # (optional) better zero with dot
+font-size = 13
 
-# Quick reload when you edit this file
+adjust-icon-height = 5
+adjust-cell-height = 0
+
+# Font Features (Iosevka ligatures and variants)
+font-feature = -calt
+font-feature = -liga
+font-feature = -dlig
+
+# Theme
+# theme = Monokai Pro Spectrum
+theme = Carbonfox
+
+# Window Appearance
+window-padding-x = 8
+window-padding-y = 8
+window-decoration = true
+background-opacity = 0.95
+unfocused-split-opacity = 0.7
+
+# Cursor
+cursor-style = block
+cursor-style-blink = true
+
+# Shell integration
+shell-integration = detect
+shell-integration-features = cursor,sudo,title
+
+# Keybindings
 keybind = ctrl+shift+comma=reload_config
-# --- Split navigation (avoid Ctrl+Alt+Arrows on Ubuntu) ---
+
+# Split navigation
 keybind = ctrl+super+left=goto_split:left
 keybind = ctrl+super+right=goto_split:right
 keybind = ctrl+super+up=goto_split:up
 keybind = ctrl+super+down=goto_split:down
-# --- Optional: resize current split ---
+
+# Split resize
 keybind = ctrl+super+shift+left=resize_split:left,40
 keybind = ctrl+super+shift+right=resize_split:right,40
 keybind = ctrl+super+shift+up=resize_split:up,40
 keybind = ctrl+super+shift+down=resize_split:down,40
-# Equalize all splits instantly
 keybind = ctrl+super+==equalize_splits
-# window-padding-x = 2
-#
-# # Spacing around the equals sign does not matter.
-# # All of these are identical:
-# key=value
-# key= value
-# key =value
-# key = value
-#
-# # Any line beginning with a # is a comment. It's not possible to put
-# # a comment after a config option, since it would be interpreted as a
-# # part of the value. For example, this will have a value of "#123abc":
-# background = #123abc
-#
-# # Empty values are used to reset config keys to default.
-# key =
-#
-# # Some config options have unique syntaxes for their value,
-# # which is explained in the docs for that config option.
-# # Just for example:
-# resize-overlay-duration = 4s 200ms
 
-# theme = Carbonfox
-theme = Monokai Pro Spectrum
+# Clipboard
+clipboard-read = allow
+clipboard-write = allow
+clipboard-trim-trailing-spaces = true
+
+# Mouse
+mouse-hide-while-typing = true
+
