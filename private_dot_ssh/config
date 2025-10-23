@@ -1,3 +1,6 @@
+Host *
+    SetEnv TERM=xterm-256color
+
 Host neptuno neptuno2
   HostName cluster.ingenieria.uner.edu.ar
   User jrestrepo
