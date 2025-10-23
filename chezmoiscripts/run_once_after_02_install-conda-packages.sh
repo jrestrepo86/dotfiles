@@ -28,6 +28,7 @@ echo "Installing essential packages (required for dotfiles setup)..."
 if ! "$CONDA_BIN" install -c conda-forge -y \
   pip \
   cmake \
+  nodejs \
   fzf \
   "starship>=1.23.0" \
   mc \

@@ -51,6 +51,13 @@ if [ -f "$PNPM_HOME/pnpm" ]; then
   else
     echo "✗ neovim package installation failed"
   fi
+
+  echo "Installing mcp-hub via pnpm..."
+  if "$PNPM_HOME/pnpm" add -g mcp-hub@latest; then
+    echo "✓ mcp-hub package installed"
+  else
+    echo "✗ mcp-hub package installation failed"
+  fi
 else
   echo "Skipping pnpm packages (pnpm not available)"
 fi
