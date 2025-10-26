@@ -27,7 +27,6 @@ return {
 
 				-- Data formats
 				"json",
-				"jsonc",
 				"yaml",
 				"toml",
 				"xml",

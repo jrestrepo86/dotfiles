@@ -8,7 +8,7 @@ return {
 			formatters_by_ft = {
 				-- Python: ruff_format only (does NOT remove imports)
 				-- ruff_organize_imports is EXCLUDED to preserve unused imports
-				python = { "ruff_format" },
+				python = { "ruff_format", "isort" },
 
 				-- LaTeX
 				tex = { "latexindent" },

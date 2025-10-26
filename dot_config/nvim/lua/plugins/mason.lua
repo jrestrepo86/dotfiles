@@ -20,6 +20,7 @@ return {
 				-- Python Stack
 				"basedpyright",
 				"ruff",
+				"isort",
 				"mypy",
 				"debugpy",
 
