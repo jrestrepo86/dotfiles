@@ -1,253 +1,178 @@
 #!/bin/bash
 # Snap packages installation
-# Only runs on machines that are NOT neptuno (cluster/server)
-# Installs: Ghostty (terminal), Chromium (browser)
-#
-# Requires: snapd (installed by run_once_after_14_install-desktop-apps.sh)
+# Only runs on desktop machines (skips neptuno/cluster)
+# To add more packages: just add them to the SNAP_PACKAGES array below
 set -e
 
+##################################################
+# CONFIGURATION
+##################################################
+# Standard snap packages (sandboxed)
 SNAP_PACKAGES=(
-  "ghostty"  # Modern terminal emulator
   "chromium" # Web browser
-  "obsidean" # md files
+  # Add more sandboxed packages below:
+  # "firefox"
+  # "discord"
+  # "spotify"
+  # "vlc"
+  # "slack"
 )
 
+# Classic confinement packages (need --classic flag)
+# These have more system access - use with caution
+SNAP_CLASSIC_PACKAGES=(
+  "ghostty"  # Modern terminal emulator
+  "obsidian" # Note-taking app (markdown)
+  # Add more classic packages below:
+  "code" # VS Code
+  # "intellij-idea-community"
+)
+
+##################################################
+# HOSTNAME CHECK
+##################################################
 HOSTNAME=$(hostname)
 
-echo "=========================================="
-echo "Snap Packages Installer"
-echo "=========================================="
-echo "Current hostname: $HOSTNAME"
-echo ""
-
-# Check if running on neptuno
-if [[ "$HOSTNAME" == "neptuno" ]] || [[ "$HOSTNAME" == neptuno* ]]; then
-  echo "⚠ Running on neptuno (cluster/server)"
-  echo "Skipping snap packages installation"
-  echo ""
-  echo "Snap packages are for desktop machines only."
+if [[ "$HOSTNAME" == "neptuno" ]] || [[ "$HOSTNAME" == neptuno* ]] ||
+  [[ "$HOSTNAME" == "jupiter" ]] || [[ "$HOSTNAME" == jupiter* ]]; then
+  echo "Running on server (neptuno/jupiter) - skipping snap packages"
   exit 0
 fi
-
-echo "✓ Running on desktop machine"
-echo "Proceeding with snap packages installation..."
-echo ""
 
 ##################################################
 # CHECK SNAPD
 ##################################################
 if ! command -v snap &>/dev/null; then
-  echo "✗ snap command not found"
-  echo ""
-  echo "snapd should have been installed by script 14:"
-  echo "  run_once_after_14_install-desktop-apps.sh"
-  echo ""
-  echo "Install it manually:"
-  echo "  sudo apt-get update"
-  echo "  sudo apt-get install -y snapd"
-  echo ""
+  echo "Error: snap command not found"
+  echo "Install snapd first: sudo apt-get install snapd"
   exit 1
 fi
-
-echo "✓ snap command available"
-echo ""
 
 # Ensure snapd service is running
 if ! systemctl is-active --quiet snapd.service 2>/dev/null; then
   echo "Starting snapd service..."
-  if sudo systemctl start snapd.service 2>/dev/null; then
-    echo "✓ snapd service started"
-  else
-    echo "⚠ Could not start snapd service"
-  fi
-
+  sudo systemctl start snapd.service 2>/dev/null || true
   sudo systemctl enable snapd.service 2>/dev/null || true
   sleep 3
 fi
 
-if systemctl is-active --quiet snapd.service 2>/dev/null; then
-  echo "✓ snapd service is active"
-else
-  echo "⚠ snapd service is not active, but continuing anyway..."
-fi
-echo ""
-
 ##################################################
-# SNAP PACKAGES
+# INSTALL PACKAGES
 ##################################################
-echo "=========================================="
-echo "Installing Snap Packages"
-echo "=========================================="
+echo "Installing snap packages..."
 echo ""
 
-TOTAL_APPS=${#SNAP_PACKAGES[@]}
-INSTALLED_APPS=0
-FAILED_APPS=()
+INSTALLED=0
+SKIPPED=0
+FAILED=()
 
-echo "Packages to install:"
-printf '  - %s\n' "${SNAP_PACKAGES[@]}"
-echo ""
+# Install regular (sandboxed) packages
+for pkg in "${SNAP_PACKAGES[@]}"; do
+  # Skip comments and empty lines
+  [[ "$pkg" =~ ^#.*$ ]] || [[ -z "$pkg" ]] && continue
 
-for snap_pkg in "${SNAP_PACKAGES[@]}"; do
-  echo "----------------------------------------"
-  echo "Package: $snap_pkg"
-  echo "----------------------------------------"
+  # Extract package name (everything before first space/comment)
+  pkg_name=$(echo "$pkg" | awk '{print $1}' | tr -d '"')
+
+  echo "→ $pkg_name"
 
   # Check if already installed
-  if snap list 2>/dev/null | grep -q "^$snap_pkg "; then
-    echo "✓ $snap_pkg already installed"
-    echo ""
-    echo "Current version:"
-    snap info "$snap_pkg" | grep "installed:" || true
-    echo ""
-    echo "To update: sudo snap refresh $snap_pkg"
-    INSTALLED_APPS=$((INSTALLED_APPS + 1))
+  if snap list 2>/dev/null | grep -q "^$pkg_name "; then
+    echo "  ✓ Already installed"
+    SKIPPED=$((SKIPPED + 1))
   else
-    echo "Installing $snap_pkg..."
-
-    # Install snap package
-    if sudo snap install "$snap_pkg"; then
-      echo "✓ $snap_pkg installed successfully"
-      echo ""
-      snap info "$snap_pkg" | grep "installed:" || true
-      INSTALLED_APPS=$((INSTALLED_APPS + 1))
+    # Install package
+    if sudo snap install "$pkg_name" 2>&1 | tee /tmp/snap_install_$$.log | grep -v "^$"; then
+      # Check if actually installed (not just no error)
+      if snap list 2>/dev/null | grep -q "^$pkg_name "; then
+        echo "  ✓ Installed successfully"
+        INSTALLED=$((INSTALLED + 1))
+      else
+        echo "  ✗ Installation failed"
+        FAILED+=("$pkg_name")
+      fi
     else
-      echo "✗ Failed to install $snap_pkg"
-      FAILED_APPS+=("$snap_pkg")
-
-      echo ""
-      echo "Troubleshooting:"
-      echo "  1. Check internet connection"
-      echo "  2. Try: sudo snap refresh"
-      echo "  3. Check: snap find $snap_pkg"
-      echo "  4. Manual install: sudo snap install $snap_pkg"
+      echo "  ✗ Installation failed"
+      FAILED+=("$pkg_name")
     fi
+    rm -f /tmp/snap_install_$$.log
+  fi
+  echo ""
+done
+
+# Install classic confinement packages
+for pkg in "${SNAP_CLASSIC_PACKAGES[@]}"; do
+  # Skip comments and empty lines
+  [[ "$pkg" =~ ^#.*$ ]] || [[ -z "$pkg" ]] && continue
+
+  # Extract package name
+  pkg_name=$(echo "$pkg" | awk '{print $1}' | tr -d '"')
+
+  echo "→ $pkg_name (classic)"
+
+  # Check if already installed
+  if snap list 2>/dev/null | grep -q "^$pkg_name "; then
+    echo "  ✓ Already installed"
+    SKIPPED=$((SKIPPED + 1))
+  else
+    # Install with --classic flag
+    if sudo snap install "$pkg_name" --classic 2>&1 | tee /tmp/snap_install_$$.log | grep -v "^$"; then
+      # Verify installation
+      if snap list 2>/dev/null | grep -q "^$pkg_name "; then
+        echo "  ✓ Installed successfully (classic confinement)"
+        INSTALLED=$((INSTALLED + 1))
+      else
+        echo "  ✗ Installation failed"
+        FAILED+=("$pkg_name")
+      fi
+    else
+      echo "  ✗ Installation failed"
+      FAILED+=("$pkg_name")
+    fi
+    rm -f /tmp/snap_install_$$.log
   fi
   echo ""
 done
 
 ##################################################
-# INSTALLATION SUMMARY
+# SUMMARY
 ##################################################
 echo "=========================================="
-echo "Installation Summary"
+echo "Summary"
 echo "=========================================="
-echo ""
-echo "Total packages: $TOTAL_APPS"
-echo "Successfully installed: $INSTALLED_APPS"
-echo "Failed: $((TOTAL_APPS - INSTALLED_APPS))"
+TOTAL_PACKAGES=$((${#SNAP_PACKAGES[@]} + ${#SNAP_CLASSIC_PACKAGES[@]}))
+echo "Total packages: $TOTAL_PACKAGES"
+echo "Newly installed: $INSTALLED"
+echo "Already installed: $SKIPPED"
+echo "Failed: ${#FAILED[@]}"
 
-if [ ${#FAILED_APPS[@]} -gt 0 ]; then
+if [ ${#FAILED[@]} -gt 0 ]; then
   echo ""
-  echo "Failed installations:"
-  printf '  ✗ %s\n' "${FAILED_APPS[@]}"
+  echo "Failed packages:"
+  printf '  ✗ %s\n' "${FAILED[@]}"
   echo ""
-  echo "Try installing manually:"
-  for pkg in "${FAILED_APPS[@]}"; do
-    echo "  sudo snap install $pkg"
-  done
+  echo "Try manually: sudo snap install <package>"
 fi
 
-echo ""
-echo "=========================================="
-echo "Installed Snap Packages"
-echo "=========================================="
-echo ""
-
-snap list ghostty &>/dev/null && {
-  echo "✓ Ghostty Terminal:"
-  echo "    Launch: ghostty"
-  echo "    Config: ~/.config/ghostty/config"
-} || echo "✗ Ghostty"
-
-echo ""
-
-snap list chromium &>/dev/null && {
-  echo "✓ Chromium Browser:"
-  echo "    Launch: chromium"
-  echo "    Profile: ~/.config/chromium/"
-} || echo "✗ Chromium"
-
-echo ""
-echo "=========================================="
-echo "Snap Information & Commands"
-echo "=========================================="
 echo ""
 echo "Installed snaps:"
-snap list 2>/dev/null || echo "  (none)"
+snap list 2>/dev/null | grep -E "(ghostty|chromium|obsidian)" || echo "  (none from this script)"
+
+echo ""
+echo "Note: Classic confinement packages have more system access"
 echo ""
 echo "Useful commands:"
-echo "  snap list                    # List installed snaps"
-echo "  snap refresh                 # Update all snaps"
-echo "  snap refresh <package>       # Update specific snap"
-echo "  snap info <package>          # Show package details"
-echo "  snap remove <package>        # Uninstall snap"
-echo "  snap find <term>             # Search for snaps"
-echo ""
-echo "Snap updates:"
-echo "  - Snaps auto-update 4 times per day"
-echo "  - To prevent updates: sudo snap refresh --hold <package>"
-echo "  - To allow updates:   sudo snap refresh --unhold <package>"
-echo "  - Check schedule:     snap refresh --time"
-echo ""
-echo "Snap connections (for file access):"
-echo "  snap connections <package>   # Show what snap can access"
-echo "  snap connect <plug>:<slot>   # Grant access"
-echo "  snap disconnect <plug>       # Revoke access"
-echo ""
+echo "  snap list              # List all installed snaps"
+echo "  snap refresh           # Update all snaps"
+echo "  snap refresh <pkg>     # Update specific snap"
+echo "  snap info <pkg>        # Show package info"
+echo "  snap remove <pkg>      # Uninstall snap"
 
-##################################################
-# POST-INSTALLATION NOTES
-##################################################
-echo "=========================================="
-echo "Post-Installation Notes"
-echo "=========================================="
-echo ""
-echo "Ghostty Terminal:"
-echo "  - Fast, GPU-accelerated terminal"
-echo "  - Configuration file already in your dotfiles"
-echo "  - First launch may take a few extra seconds"
-echo "  - Check config: cat ~/.config/ghostty/config"
-echo ""
-echo "Chromium Browser:"
-echo "  - Sandboxed snap version"
-echo "  - Auto-updates daily"
-echo "  - Has access to:"
-echo "    - Home directory"
-echo "    - Downloads folder"
-echo "    - Removable media (if connected)"
-echo ""
-echo "Application Menu:"
-echo "  - Snap apps may require logout/login to appear in menu"
-echo "  - Can always launch from terminal"
-echo ""
-echo "Troubleshooting:"
-echo "  - Apps not appearing? Try: xdg-desktop-menu forceupdate"
-echo "  - Chromium file access issues? Check: snap connections chromium"
-echo "  - Service issues? Restart: sudo systemctl restart snapd"
-echo ""
-
-##################################################
-# VERIFY INSTALLATION
-##################################################
-if command -v ghostty &>/dev/null; then
-  echo "✓ ghostty command is available"
-else
-  echo "⚠ ghostty command not found in PATH"
-  echo "  You may need to restart your shell or add to PATH:"
-  echo "  export PATH=\"/snap/bin:\$PATH\""
-fi
-
-if command -v chromium &>/dev/null; then
-  echo "✓ chromium command is available"
-else
-  echo "⚠ chromium command not found in PATH"
-  echo "  You may need to restart your shell"
+if [ $INSTALLED -gt 0 ]; then
+  echo ""
+  echo "Note: You may need to logout/login for apps to appear in menu"
+  echo "      Or force update: xdg-desktop-menu forceupdate"
 fi
 
 echo ""
 echo "Installation complete!"
-echo ""
-echo "To test:"
-echo "  ghostty --version"
-echo "  chromium --version"
