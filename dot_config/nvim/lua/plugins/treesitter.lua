@@ -28,6 +28,7 @@ return {
 				-- Data formats
 				"json",
 				"yaml",
+				"jsonc",
 				"toml",
 				"xml",
 
@@ -117,3 +118,9 @@ return {
 		end,
 	},
 }
+
+-- I believe the issue is with gitlab.com.
+--
+-- I replaced the tree-sitter-jsonc repository URL with a GitHub fork, and it works.
+-- ~/.local/share/nvim/lazy/nvim-treesitter/lua/nvim-treesitter/parsers.lua line 1149  url = 'https://gitlab.com/WhyNotHugo/tree-sitter-jsonc',
+-- by  url = 'https://github.com/sunilunnithan/tree-sitter-jsonc',
