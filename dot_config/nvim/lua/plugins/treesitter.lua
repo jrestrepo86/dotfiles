@@ -1,38 +1,120 @@
+-- Simplified Treesitter configuration for LazyVim
+-- Just adds parsers and basic config - no complex setup
+
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
 		opts = function(_, opts)
-			-- add tsx and treesitter
+			-- Add all required parsers
 			vim.list_extend(opts.ensure_installed, {
-				"bash",
-				"vim",
-				"regex",
-				"c",
-				"css",
-				"html",
-				"tsx",
-				"typescript",
-				"javascript",
-				"json",
-				"json5",
+				-- Core
+				"python",
 				"lua",
-				"luadoc",
-				"luap",
+				"vim",
+				"vimdoc",
+
+				-- LaTeX
+				"latex",
+				"bibtex",
+
+				-- Web (Django)
+				"html",
+				"css",
+				"scss",
+				"javascript",
+				"typescript",
+				"tsx",
+
+				-- Data formats
+				"json",
+				"jsonc",
+				"yaml",
+				"toml",
+				"xml",
+
+				-- Markup
 				"markdown",
 				"markdown_inline",
-				"python",
-				"query",
-				"tsx",
-				"yaml",
-				"latex",
-				"ninja",
 				"rst",
+
+				-- Shell
+				"bash",
+
+				-- DevOps
+				"dockerfile",
+
+				-- Git
+				"gitcommit",
+				"gitignore",
 				"diff",
-				"scss",
-				"svelte",
-				"typst",
-				"vue",
+
+				-- Other
+				"sql",
+				"regex",
+				"comment",
 			})
+
+			-- Better highlighting for these
+			opts.highlight = opts.highlight or {}
+			opts.highlight.enable = true
+			opts.highlight.additional_vim_regex_highlighting = { "latex", "markdown", "python" }
+
+			-- Let LSP handle Python and YAML indentation
+			opts.indent = opts.indent or {}
+			opts.indent.enable = true
+			opts.indent.disable = { "python", "yaml" }
+
+			return opts
+		end,
+	},
+
+	-- Treesitter context (show function/class at top)
+	{
+		"nvim-treesitter/nvim-treesitter-context",
+		event = "VeryLazy",
+		opts = {
+			enable = true,
+			max_lines = 3,
+			min_window_height = 20,
+		},
+		keys = {
+			{
+				"<leader>ut",
+				function()
+					require("treesitter-context").toggle()
+				end,
+				desc = "Toggle Treesitter Context",
+			},
+		},
+	},
+
+	-- Rainbow delimiters
+	{
+		"HiPhish/rainbow-delimiters.nvim",
+		event = "BufReadPost",
+		config = function()
+			local rainbow_delimiters = require("rainbow-delimiters")
+
+			vim.g.rainbow_delimiters = {
+				strategy = {
+					[""] = rainbow_delimiters.strategy["global"],
+					vim = rainbow_delimiters.strategy["local"],
+				},
+				query = {
+					[""] = "rainbow-delimiters",
+					lua = "rainbow-blocks",
+					latex = "rainbow-blocks",
+				},
+				highlight = {
+					"RainbowDelimiterRed",
+					"RainbowDelimiterYellow",
+					"RainbowDelimiterBlue",
+					"RainbowDelimiterOrange",
+					"RainbowDelimiterGreen",
+					"RainbowDelimiterViolet",
+					"RainbowDelimiterCyan",
+				},
+			}
 		end,
 	},
 }
