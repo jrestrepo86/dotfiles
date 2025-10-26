@@ -9,8 +9,8 @@ return {
 			-- Python: ruff with F401 (unused imports) ignored
 			python = { "ruff", "mypy" },
 
-			-- LaTeX
-			tex = { "chktex" },
+			-- LaTeX: No linter (texlab LSP handles diagnostics)
+			-- tex = {},
 
 			-- Web
 			html = { "djlint" },
@@ -104,18 +104,8 @@ return {
 					"--no-color-output",
 					"--no-error-summary",
 					"--no-pretty",
-					"--ignore-missing-imports", -- Ignore missing type stubs
+					"--ignore-missing-imports",
 					"--follow-imports=silent",
-				},
-			},
-
-			-- LaTeX: chktex
-			chktex = {
-				args = {
-					"-q", -- Quiet
-					"-v0", -- Verbosity 0
-					"-I0", -- Don't show input line
-					"-f%l:%c:%d:%k:%m\n", -- Custom format
 				},
 			},
 
@@ -158,6 +148,9 @@ return {
 				},
 			},
 
+			-- Markdown: vale
+			vale = {},
+
 			-- YAML: yamllint
 			yamllint = {
 				args = {
@@ -174,7 +167,7 @@ return {
 					"--format",
 					"json",
 					"--dialect",
-					"postgres", -- Change to mysql, etc. as needed
+					"postgres",
 					"--stdin-filename",
 					"$FILENAME",
 					"-",

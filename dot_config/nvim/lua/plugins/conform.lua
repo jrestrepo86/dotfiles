@@ -1,32 +1,3 @@
--- return {
--- 	{
--- 		"stevearc/conform.nvim",
--- 		opts = {
--- 			formatters_by_ft = {
--- 				python = { "ruff_organize_imports", "ruff_format" },
--- 				css = { "prettier" },
--- 				scss = { "prettier" },
--- 				html = { "prettier" },
--- 				json = { "prettier" },
--- 				yaml = { "yamlfmt" },
--- 				markdown = { "prettier" },
--- 				tex = { "latexindent" },
--- 				lua = { "stylua" },
--- 				sql = { "sql_formatter" },
--- 				toml = { "taplo", "pyproject-fmt" },
--- 			},
--- 			-- formatters = {
--- 			-- 	ruff_fix = {
--- 			-- 		args = { "--ignore", "F401" },
--- 			-- 	},
--- 			-- 	ruff_organize_imports = {
--- 			-- 		args = { "--ignore", "F401" },
--- 			-- 	},
--- 			-- },
--- 		},
--- 	},
--- }
-
 -- Conform.nvim - Formatting configuration
 -- CRITICAL: Python formatters configured to NOT remove unused imports
 
@@ -140,28 +111,6 @@ return {
 					},
 				},
 			},
-
-			-- Format on save settings
-			format_on_save = function(bufnr)
-				-- Disable for certain filetypes
-				local disable_filetypes = { c = true, cpp = true }
-				if disable_filetypes[vim.bo[bufnr].filetype] then
-					return
-				end
-
-				return {
-					timeout_ms = 1000,
-					lsp_fallback = true,
-				}
-			end,
-
-			-- Format after save (for slow formatters)
-			format_after_save = {
-				lsp_fallback = true,
-			},
-
-			-- Logging
-			log_level = vim.log.levels.WARN,
 		},
 	},
 }
