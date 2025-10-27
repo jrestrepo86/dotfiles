@@ -1,10 +1,11 @@
 #!/bin/bash
-# LazyVim dependencies - depends on pnpm (05), cargo (03), miniconda (01)
+# LazyVim dependencies - depends on pnpm (05), cargo (03), miniconda (01), nvm (02b)
 set -e
 
 MINICONDA_DIR="$HOME/.local/share/miniconda"
 PNPM_HOME="$HOME/.local/share/pnpm"
 CARGO_HOME="$HOME/.local/share/cargo"
+NVM_DIR="$HOME/.local/share/nvm"
 NVIM_CONFIG="$HOME/.config/nvim"
 
 echo "Installing LazyVim dependencies..."
@@ -13,20 +14,35 @@ echo ""
 # Track what's missing
 MISSING_DEPS=()
 
-# Check dependencies
+# Check pnpm
 if [ ! -f "$PNPM_HOME/pnpm" ]; then
   echo "Warning: pnpm not found at $PNPM_HOME"
   MISSING_DEPS+=("pnpm")
 fi
 
+# Check cargo
 if [ ! -f "$CARGO_HOME/bin/cargo" ]; then
   echo "Warning: cargo not found at $CARGO_HOME"
   MISSING_DEPS+=("cargo")
 fi
 
+# Check pip
 if [ ! -f "$MINICONDA_DIR/bin/pip" ]; then
   echo "Warning: pip not found at $MINICONDA_DIR"
   MISSING_DEPS+=("pip")
+fi
+
+# Check node/npm (from nvm)
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  # shellcheck disable=SC1091
+  source "$NVM_DIR/nvm.sh"
+  if ! command -v node &> /dev/null || ! command -v npm &> /dev/null; then
+    echo "Warning: node/npm not available from nvm"
+    MISSING_DEPS+=("node/npm")
+  fi
+else
+  echo "Warning: nvm not found at $NVM_DIR"
+  MISSING_DEPS+=("nvm")
 fi
 
 if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
@@ -60,6 +76,18 @@ if [ -f "$PNPM_HOME/pnpm" ]; then
   fi
 else
   echo "Skipping pnpm packages (pnpm not available)"
+
+  # Fallback: try using npm from nvm if available
+  if command -v npm &> /dev/null; then
+    echo ""
+    echo "Attempting to use npm as fallback..."
+
+    if npm install -g neovim; then
+      echo "✓ neovim package installed via npm"
+    else
+      echo "✗ neovim package installation via npm failed"
+    fi
+  fi
 fi
 
 # Install fd-find via cargo
@@ -121,10 +149,15 @@ echo "-------------------"
 [ -f "$PNPM_HOME/mmdc" ] && echo "✓ mermaid-cli" || echo "✗ mermaid-cli"
 [ -f "$CARGO_HOME/bin/fd" ] && echo "✓ fd-find" || echo "✗ fd-find"
 [ -f "$CARGO_HOME/bin/tree-sitter" ] && echo "✓ tree-sitter-cli" || echo "✗ tree-sitter-cli"
-"$MINICONDA_DIR/bin/pip" show pynvim &>/dev/null && echo "✓ pynvim" || echo "✗ pynvim"
-"$MINICONDA_DIR/bin/gem" list neovim &>/dev/null && echo "✓ neovim gem" || echo "✗ neovim gem"
+"$MINICONDA_DIR/bin/pip" show pynvim &> /dev/null && echo "✓ pynvim" || echo "✗ pynvim"
+"$MINICONDA_DIR/bin/gem" list neovim &> /dev/null && echo "✓ neovim gem" || echo "✗ neovim gem"
+command -v node &> /dev/null && echo "✓ node (via nvm): $(node --version)" || echo "✗ node"
+command -v npm &> /dev/null && echo "✓ npm (via nvm): $(npm --version)" || echo "✗ npm"
 echo ""
 echo "Next steps:"
 echo "1. Your nvim config is managed by chezmoi at ~/.local/share/chezmoi/dot_config/nvim/"
 echo "2. Launch nvim - LazyVim will install plugins on first run"
 echo "3. Run :checkhealth in nvim to verify everything works"
+echo ""
+echo "Note: If node/npm commands aren't found, restart your shell or run:"
+echo '      source "$HOME/.bashrc"'

@@ -28,10 +28,7 @@ echo "Installing essential packages (required for dotfiles setup)..."
 if ! "$CONDA_BIN" install -c conda-forge -y \
   pip \
   cmake \
-  "nodejs>=18" \
-  npm \
   fzf \
-  "starship>=1.23.0" \
   mc \
   lazygit; then
   echo "Warning: Some essential conda packages failed to install"
@@ -42,7 +39,7 @@ echo ""
 echo "Essential conda packages installation complete"
 echo ""
 echo "Installed essential packages:"
-"$CONDA_BIN" list | grep -E "(pip|cmake|fzf|starship|mc|lazygit)"
+"$CONDA_BIN" list | grep -E "(pip|cmake|fzf|mc|lazygit)"
 echo ""
 echo "Note: Data science packages (numpy, pandas, pytorch, etc.) will be installed"
 echo "      by a separate script (run_once_after_10_install-datascience.sh)"

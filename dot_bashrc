@@ -19,28 +19,19 @@ HISTFILESIZE=2000
 ## Path settings
 ##-----------------------------------------------------
 
-## opencode
-export PATH=$HOME/.opencode/bin:$PATH
-
-## Lm-Studio
-export LM_API_KEY="lm-studio"
-export PATH="$HOME/.lmstudio/bin:$PATH:"
-
-## go
-export GOROOT="$HOME/.local/share/go"
-export PATH="$GOROOT/bin:$PATH"
-export GOPATH="$HOME/.local/go"
-export PATH="$GOPATH/bin:$PATH"
+## bin
+export PATH="$HOME/.local/bin:$PATH"
 
 ## pnpm
 export PNPM_HOME="$HOME/.local/share/pnpm"
 export PATH="$PNPM_HOME:$PATH"
 
-## miniconda
-export CONDA_DIR="$HOME/.local/share/miniconda/bin"
-export PATH="$CONDA_DIR:$PATH"
+## nvm
+export NVM_DIR="$HOME/.local/share/nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
 
-## cargo
+## rust/cargo
 export CARGO_HOME="$HOME/.local/share/cargo"
 export RUSTUP_HOME="$HOME/.local/share/rustup"
 if [ -f "$CARGO_HOME/env" ]; then
@@ -48,22 +39,31 @@ if [ -f "$CARGO_HOME/env" ]; then
 fi
 export PATH="$CARGO_HOME/bin:$PATH"
 
-## nvm
-export NVM_DIR="$HOME/.local/share/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+## go
+export GOROOT="$HOME/.local/share/go"
+export PATH="$GOROOT/bin:$PATH"
+export GOPATH="$HOME/.local/go"
+export PATH="$GOPATH/bin:$PATH"
 
 ## Ruby - Safe version detection
 export GEM_HOME="$HOME/.local/share/gem"
-if command -v ruby &>/dev/null; then
-  RUBY_VERSION=$(ruby -e 'puts RbConfig::CONFIG["ruby_version"]' 2>/dev/null)
+if command -v ruby &> /dev/null; then
+  RUBY_VERSION=$(ruby -e 'puts RbConfig::CONFIG["ruby_version"]' 2> /dev/null)
   if [ -n "$RUBY_VERSION" ] && [ -d "$GEM_HOME/ruby/$RUBY_VERSION/bin" ]; then
     export PATH="$GEM_HOME/ruby/$RUBY_VERSION/bin:$PATH"
   fi
 fi
 
-## bin
-export PATH="$HOME/.local/bin:$PATH"
+## miniconda
+export CONDA_DIR="$HOME/.local/share/miniconda/bin"
+export PATH="$CONDA_DIR:$PATH"
+
+## opencode
+export PATH=$HOME/.opencode/bin:$PATH
+
+## Lm-Studio
+export LM_API_KEY="lm-studio"
+export PATH="$HOME/.lmstudio/bin:$PATH:"
 
 ##-----------------------------------------------------
 ## Editor
@@ -111,8 +111,8 @@ BITBUCKET_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/bitBucketToken.txt"
 gtoken() {
   if [[ -r "$GITHUB_TOKEN_FILE" ]]; then
     cat "$GITHUB_TOKEN_FILE"
-    if command -v xclip &>/dev/null; then
-      xclip -sel clip <"$GITHUB_TOKEN_FILE"
+    if command -v xclip &> /dev/null; then
+      xclip -sel clip < "$GITHUB_TOKEN_FILE"
     else
       echo "xclip not found - token not copied to clipboard" >&2
     fi
@@ -125,8 +125,8 @@ gtoken() {
 btoken() {
   if [[ -r "$BITBUCKET_TOKEN_FILE" ]]; then
     cat "$BITBUCKET_TOKEN_FILE"
-    if command -v xclip &>/dev/null; then
-      xclip -sel clip <"$BITBUCKET_TOKEN_FILE"
+    if command -v xclip &> /dev/null; then
+      xclip -sel clip < "$BITBUCKET_TOKEN_FILE"
     else
       echo "xclip not found - token not copied to clipboard" >&2
     fi
@@ -157,8 +157,8 @@ cdh() {
 ff() {
   local query="${*:-}" dir
   dir="$(
-    fd -H -t d . "$HOME" 2>/dev/null |
-      fzf +m --prompt='cd > ' --query="$query" --select-1 --exit-0
+    fd -H -t d . "$HOME" 2> /dev/null \
+      | fzf +m --prompt='cd > ' --query="$query" --select-1 --exit-0
   )" || return
   [ -n "$dir" ] && cd "$dir" || return
 }
@@ -166,10 +166,10 @@ ff() {
 ## Load conda hook on demand, no auto-activation
 _load_conda_hook() {
   local shname="$(basename "$SHELL")"
-  eval "$("conda" "shell.${shname}" "hook" 2>/dev/null)" ||
-    { base="$(conda info --base 2>/dev/null)" &&
-      [ -f "$base/etc/profile.d/conda.sh" ] &&
-      . "$base/etc/profile.d/conda.sh"; } || return 1
+  eval "$("conda" "shell.${shname}" "hook" 2> /dev/null)" \
+    || { base="$(conda info --base 2> /dev/null)" \
+      && [ -f "$base/etc/profile.d/conda.sh" ] \
+      && . "$base/etc/profile.d/conda.sh"; } || return 1
 }
 
 ## Fast activate conda env
@@ -180,9 +180,9 @@ cenv() {
   }
   local env
   env="$(
-    conda info --envs 2>/dev/null |
-      awk 'NF && $1 !~ /^#/ {print $1}' |
-      fzf +m --prompt='conda env > ' --select-1 --exit-0
+    conda info --envs 2> /dev/null \
+      | awk 'NF && $1 !~ /^#/ {print $1}' \
+      | fzf +m --prompt='conda env > ' --select-1 --exit-0
   )" || return
   [ -n "$env" ] && conda activate "$env"
 }
@@ -194,21 +194,21 @@ cdeact() {
     return 1
   }
   case "${1:-one}" in
-  --all)
-    while [ "${CONDA_SHLVL:-0}" -gt 0 ]; do conda deactivate || break; done
-    ;;
-  --to-base)
-    while [ "${CONDA_SHLVL:-0}" -gt 0 ] && [ "${CONDA_DEFAULT_ENV-}" != "base" ]; do
-      conda deactivate || break
-    done
-    ;;
-  -*)
-    echo "Usage: cdeact [--all | --to-base]" >&2
-    return 2
-    ;;
-  *)
-    conda deactivate
-    ;;
+    --all)
+      while [ "${CONDA_SHLVL:-0}" -gt 0 ]; do conda deactivate || break; done
+      ;;
+    --to-base)
+      while [ "${CONDA_SHLVL:-0}" -gt 0 ] && [ "${CONDA_DEFAULT_ENV-}" != "base" ]; do
+        conda deactivate || break
+      done
+      ;;
+    -*)
+      echo "Usage: cdeact [--all | --to-base]" >&2
+      return 2
+      ;;
+    *)
+      conda deactivate
+      ;;
   esac
 }
 
@@ -219,9 +219,9 @@ cfgpick() {
     echo "No config dir: $base" >&2
     return 1
   }
-  fdfind -H -t d . "$base" -d 1 2>/dev/null |
-    sort |
-    fzf +m --prompt='~/.config/ ' --select-1 --exit-0 \
+  fdfind -H -t d . "$base" -d 1 2> /dev/null \
+    | sort \
+    | fzf +m --prompt='~/.config/ ' --select-1 --exit-0 \
       --preview 'ls -la {} | sed -n "1,200p"'
 }
 
@@ -264,10 +264,10 @@ fi
 ##-----------------------------------------------------
 # !! Contents within this block are managed by juliaup !!
 case ":$PATH:" in
-*:/home/jrestrepo/.juliaup/bin:*) ;;
-*)
-  export PATH=/home/jrestrepo/.juliaup/bin${PATH:+:${PATH}}
-  ;;
+  *:/home/jrestrepo/.juliaup/bin:*) ;;
+  *)
+    export PATH=/home/jrestrepo/.juliaup/bin${PATH:+:${PATH}}
+    ;;
 esac
 
 ##-----------------------------------------------------
@@ -286,14 +286,14 @@ _complete_ollama() {
     mapfile -t COMPREPLY < <(compgen -W "${commands[*]}" -- "$cur")
   elif [[ $cword -eq 2 ]]; then
     case "$prev" in
-    run | show | cp | rm | push | list)
-      local -a models
-      # Use mapfile to safely read command output into array
-      mapfile -t models < <(ollama list 2>/dev/null | tail -n +2 | cut -d $'\t' -f 1)
-      # Safely generate completions
-      mapfile -t COMPREPLY < <(compgen -W "${models[*]}" -- "$cur")
-      __ltrim_colon_completions "$cur"
-      ;;
+      run | show | cp | rm | push | list)
+        local -a models
+        # Use mapfile to safely read command output into array
+        mapfile -t models < <(ollama list 2> /dev/null | tail -n +2 | cut -d $'\t' -f 1)
+        # Safely generate completions
+        mapfile -t COMPREPLY < <(compgen -W "${models[*]}" -- "$cur")
+        __ltrim_colon_completions "$cur"
+        ;;
     esac
   fi
 }
