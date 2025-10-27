@@ -18,14 +18,23 @@ HISTFILESIZE=2000
 ##-----------------------------------------------------
 ## Path settings
 ##-----------------------------------------------------
-## bin
-export PATH="$HOME/.local/bin:$PATH"
+
+## opencode
+export PATH=$HOME/.opencode/bin:$PATH
+
+## Lm-Studio
+export LM_API_KEY="lm-studio"
+export PATH="$HOME/.lmstudio/bin:$PATH:"
 
 ## go
 export GOROOT="$HOME/.local/share/go"
 export PATH="$GOROOT/bin:$PATH"
 export GOPATH="$HOME/.local/go"
 export PATH="$GOPATH/bin:$PATH"
+
+## pnpm
+export PNPM_HOME="$HOME/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
 
 ## miniconda
 export CONDA_DIR="$HOME/.local/share/miniconda/bin"
@@ -39,21 +48,10 @@ if [ -f "$CARGO_HOME/env" ]; then
 fi
 export PATH="$CARGO_HOME/bin:$PATH"
 
-## pnpm
-export PNPM_HOME="$HOME/.local/share/pnpm"
-export PATH="$PNPM_HOME:$PATH"
-
 ## nvm
 export NVM_DIR="$HOME/.local/share/nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
-
-## opencode
-export PATH=$HOME/.opencode/bin:$PATH
-
-## Lm-Studio
-export LM_API_KEY="lm-studio"
-export PATH="$HOME/.lmstudio/bin:$PATH:"
 
 ## Ruby - Safe version detection
 export GEM_HOME="$HOME/.local/share/gem"
@@ -63,6 +61,9 @@ if command -v ruby &>/dev/null; then
     export PATH="$GEM_HOME/ruby/$RUBY_VERSION/bin:$PATH"
   fi
 fi
+
+## bin
+export PATH="$HOME/.local/bin:$PATH"
 
 ##-----------------------------------------------------
 ## Editor
