@@ -46,13 +46,10 @@ export GOPATH="$HOME/.local/go"
 export PATH="$GOPATH/bin:$PATH"
 
 ## Ruby - Safe version detection
+export RBENV_ROOT="$HOME/.local/share/rbenv"
 export GEM_HOME="$HOME/.local/share/gem"
-if command -v ruby &> /dev/null; then
-  RUBY_VERSION=$(ruby -e 'puts RbConfig::CONFIG["ruby_version"]' 2> /dev/null)
-  if [ -n "$RUBY_VERSION" ] && [ -d "$GEM_HOME/ruby/$RUBY_VERSION/bin" ]; then
-    export PATH="$GEM_HOME/ruby/$RUBY_VERSION/bin:$PATH"
-  fi
-fi
+export PATH="$RBENV_ROOT/bin:$PATH"
+eval "$(rbenv init - bash)"
 
 ## miniconda
 export CONDA_DIR="$HOME/.local/share/miniconda/bin"
