@@ -38,6 +38,28 @@ BASH_PROFILE="$HOME/.bash_profile"
 BASH_ALIASES="$HOME/.bash_aliases"
 GIT_COMPLETION="$HOME/.git-completion.bash"
 
+# Desktop apps installed via apt
+APT_PACKAGES=(
+  "okular"
+  "zathura"
+  "gdebi"
+  "gimp"
+  "gparted"
+  "gedit"
+  "flatpak"
+  "tilda"
+  "google-chrome-stable"
+  "brave-browser"
+)
+
+# Snap packages
+SNAP_PACKAGES=(
+  "chromium"
+  "ghostty"
+  "obsidian"
+  "code"
+)
+
 ##################################################
 # Helper Functions
 ##################################################
@@ -141,6 +163,58 @@ backup_file() {
   fi
 }
 
+remove_apt_package() {
+  local pkg="$1"
+
+  if dpkg -l | grep -q "^ii  $pkg "; then
+    if [ "$AUTO_YES" = true ]; then
+      if sudo apt-get remove -y -qq "$pkg" 2>&1 | grep -v "^$"; then
+        print_success "Removed apt package: $pkg"
+      else
+        print_error "Failed to remove: $pkg"
+      fi
+    else
+      if confirm "Remove apt package $pkg?"; then
+        if sudo apt-get remove -y "$pkg"; then
+          print_success "Removed apt package: $pkg"
+        else
+          print_error "Failed to remove: $pkg"
+        fi
+      else
+        print_warning "Skipped: $pkg"
+      fi
+    fi
+  else
+    print_info "Package $pkg not installed"
+  fi
+}
+
+remove_snap_package() {
+  local pkg="$1"
+
+  if command -v snap &> /dev/null && snap list 2> /dev/null | grep -q "^$pkg "; then
+    if [ "$AUTO_YES" = true ]; then
+      if sudo snap remove "$pkg" 2>&1 | grep -v "^$"; then
+        print_success "Removed snap: $pkg"
+      else
+        print_error "Failed to remove snap: $pkg"
+      fi
+    else
+      if confirm "Remove snap package $pkg?"; then
+        if sudo snap remove "$pkg"; then
+          print_success "Removed snap: $pkg"
+        else
+          print_error "Failed to remove snap: $pkg"
+        fi
+      else
+        print_warning "Skipped snap: $pkg"
+      fi
+    fi
+  else
+    print_info "Snap $pkg not installed"
+  fi
+}
+
 ##################################################
 # Show Help
 ##################################################
@@ -159,15 +233,18 @@ OPTIONS:
   --dry-run     Show what would be removed without actually removing
 
 WHAT GETS REMOVED:
-  • Miniconda (Python, conda packages)
+  • Miniconda (Python, conda packages, data science packages)
   • Rust (cargo, rustup, all installed crates)
   • Go (go runtime and GOPATH)
   • pnpm (Node.js package manager)
   • Ruby gems (user-installed gems)
   • NVM (if installed)
   • Nerd Fonts (all installed fonts)
-  • Desktop applications (Alacritty, Kitty launchers)
+  • Desktop applications (apt packages: okular, zathura, gimp, etc.)
+  • Snap packages (ghostty, obsidian, chromium, VS Code)
+  • Browsers (Google Chrome, Brave)
   • User binaries (nvim, lsd, bat, fd, etc.)
+  • Neovim configuration (LazyVim)
   • Git completion script
 
 WHAT GETS BACKED UP:
@@ -240,6 +317,8 @@ if [ "$DRY_RUN" = true ]; then
   print_header "DRY RUN MODE - Nothing will be removed"
 
   echo "Would remove the following:"
+  echo ""
+  echo "Package managers & Languages:"
   [ -d "$MINICONDA_DIR" ] && echo "  • Miniconda: $MINICONDA_DIR"
   [ -d "$CARGO_HOME" ] && echo "  • Cargo: $CARGO_HOME"
   [ -d "$RUSTUP_HOME" ] && echo "  • Rustup: $RUSTUP_HOME"
@@ -248,12 +327,37 @@ if [ "$DRY_RUN" = true ]; then
   [ -d "$PNPM_HOME" ] && echo "  • pnpm: $PNPM_HOME"
   [ -d "$GEM_HOME" ] && echo "  • Ruby gems: $GEM_HOME"
   [ -d "$NVM_DIR" ] && echo "  • NVM: $NVM_DIR"
-  [ -d "$FONTS_DIR" ] && echo "  • Nerd Fonts: $FONTS_DIR"
+
+  echo ""
+  echo "Desktop Applications (apt):"
+  for pkg in "${APT_PACKAGES[@]}"; do
+    if dpkg -l | grep -q "^ii  $pkg "; then
+      echo "  • $pkg"
+    fi
+  done
+
+  echo ""
+  echo "Snap Applications:"
+  if command -v snap &> /dev/null; then
+    for pkg in "${SNAP_PACKAGES[@]}"; do
+      if snap list 2> /dev/null | grep -q "^$pkg "; then
+        echo "  • $pkg"
+      fi
+    done
+  fi
+
+  echo ""
+  echo "User binaries:"
   [ -f "$LOCAL_BIN/nvim" ] && echo "  • Neovim: $LOCAL_BIN/nvim"
   [ -f "$LOCAL_BIN/lsd" ] && echo "  • lsd: $LOCAL_BIN/lsd"
   [ -f "$LOCAL_BIN/bat" ] && echo "  • bat: $LOCAL_BIN/bat"
+  [ -f "$LOCAL_BIN/fd" ] && echo "  • fd: $LOCAL_BIN/fd"
   [ -f "$LOCAL_BIN/alacritty" ] && echo "  • Alacritty: $LOCAL_BIN/alacritty"
-  [ -f "$MINICONDA_DIR/bin/kitty" ] && echo "  • Kitty: $MINICONDA_DIR/bin/kitty"
+
+  echo ""
+  echo "Other:"
+  [ -d "$FONTS_DIR" ] && [ -n "$(find "$FONTS_DIR" -name "*Nerd*" 2> /dev/null)" ] && echo "  • Nerd Fonts: $FONTS_DIR"
+  [ -d "$HOME/.config/nvim" ] && echo "  • Neovim config: ~/.config/nvim"
   [ -f "$GIT_COMPLETION" ] && echo "  • Git completion: $GIT_COMPLETION"
 
   echo -e "\nWould backup:"
@@ -273,7 +377,13 @@ fi
 print_header "Chezmoi Software Cleanup"
 
 echo "This script will remove ALL software installed by chezmoi scripts."
-echo "This includes: Python, Node.js, Rust, Go, Ruby, Neovim, fonts, and more."
+echo "This includes:"
+echo "  • Development tools (Python, Node.js, Rust, Go, Ruby)"
+echo "  • Desktop applications (GIMP, Okular, Zathura, etc.)"
+echo "  • Snap packages (Ghostty, Obsidian, VS Code, Chromium)"
+echo "  • Browsers (Chrome, Brave)"
+echo "  • Terminal tools (Neovim, bat, lsd, fd, fzf, lazygit)"
+echo "  • Fonts and configurations"
 echo ""
 echo -e "${YELLOW}⚠ WARNING: This action cannot be undone!${NC}"
 echo ""
@@ -304,10 +414,63 @@ if [ -d "$BACKUP_DIR" ]; then
 fi
 
 ##################################################
+# Remove Desktop Applications (apt)
+##################################################
+
+print_header "Removing Desktop Applications (apt)"
+
+# Check if we have sudo access
+if ! command -v sudo &> /dev/null; then
+  print_warning "sudo not available - skipping apt package removal"
+else
+  for pkg in "${APT_PACKAGES[@]}"; do
+    remove_apt_package "$pkg"
+  done
+
+  # Clean up Chrome repository
+  if [ -f "/etc/apt/sources.list.d/google-chrome.list" ]; then
+    if [ "$AUTO_YES" = true ] || confirm "Remove Google Chrome repository?"; then
+      sudo rm -f /etc/apt/sources.list.d/google-chrome.list
+      sudo rm -f /usr/share/keyrings/google-chrome-keyring.gpg
+      print_success "Removed Chrome repository"
+    fi
+  fi
+
+  # Clean up Brave repository
+  if [ -f "/etc/apt/sources.list.d/brave-browser-release.list" ]; then
+    if [ "$AUTO_YES" = true ] || confirm "Remove Brave repository?"; then
+      sudo rm -f /etc/apt/sources.list.d/brave-browser-release.list
+      sudo rm -f /usr/share/keyrings/brave-browser-archive-keyring.gpg
+      print_success "Removed Brave repository"
+    fi
+  fi
+
+  # Run apt autoremove to clean up dependencies
+  if [ "$AUTO_YES" = true ] || confirm "Run 'apt autoremove' to clean up unused dependencies?"; then
+    sudo apt-get autoremove -y -qq
+    print_success "Cleaned up unused dependencies"
+  fi
+fi
+
+##################################################
+# Remove Snap Packages
+##################################################
+
+print_header "Removing Snap Packages"
+
+if ! command -v snap &> /dev/null; then
+  print_info "Snap not installed - skipping snap package removal"
+else
+  for pkg in "${SNAP_PACKAGES[@]}"; do
+    remove_snap_package "$pkg"
+  done
+fi
+
+##################################################
 # Remove Miniconda
 ##################################################
 
-print_header "Removing Miniconda (Python)"
+print_header "Removing Miniconda (Python & Data Science)"
 
 remove_directory "$MINICONDA_DIR" "Miniconda"
 
@@ -382,6 +545,8 @@ BINARIES=(
   "alacritty"
   "tree-sitter"
   "mmdc"
+  "fzf"
+  "lazygit"
 )
 
 for binary in "${BINARIES[@]}"; do
@@ -453,10 +618,10 @@ print_header "Removing Git Completion"
 remove_file "$GIT_COMPLETION" "Git completion script"
 
 ##################################################
-# Remove LazyVim Dependencies
+# Remove LazyVim/Neovim Configuration
 ##################################################
 
-print_header "Removing LazyVim Configuration"
+print_header "Removing Neovim Configuration"
 
 # Only proceed if any Neovim directories exist
 if [ -d "$HOME/.config/nvim" ] || [ -d "$HOME/.local/share/nvim" ] \
@@ -489,15 +654,19 @@ fi
 
 print_header "Cleanup Complete!"
 
-echo "The following have been removed:"
-echo "  ✓ Miniconda (Python environment)"
+echo "The following categories have been processed:"
+echo "  ✓ Miniconda (Python + Data Science packages)"
 echo "  ✓ Rust (Cargo + Rustup)"
 echo "  ✓ Go runtime and packages"
 echo "  ✓ pnpm (Node.js package manager)"
 echo "  ✓ Ruby gems"
-echo "  ✓ User binaries (nvim, lsd, bat, etc.)"
+echo "  ✓ Desktop applications (apt packages)"
+echo "  ✓ Snap packages (Ghostty, Obsidian, VS Code, etc.)"
+echo "  ✓ Browsers (Chrome, Brave)"
+echo "  ✓ User binaries (nvim, lsd, bat, fzf, lazygit, etc.)"
 echo "  ✓ Nerd Fonts"
 echo "  ✓ Desktop launchers"
+echo "  ✓ Neovim configuration"
 echo "  ✓ Git completion"
 echo ""
 
@@ -520,7 +689,8 @@ cat << EOF
    ${GREEN}source ~/.bashrc${NC}
 
 4. Verify installations:
-   ${GREEN}which nvim pnpm node python cargo go${NC}
+   ${GREEN}which nvim python cargo go ghostty${NC}
+   ${GREEN}snap list${NC}
 
 Note: Your dotfiles (.bashrc, .bash_profile) may need manual cleanup
       of PATH exports. Check the backup if you need the originals.
