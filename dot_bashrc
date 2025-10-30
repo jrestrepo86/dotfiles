@@ -48,6 +48,7 @@ export PATH="$GOPATH/bin:$PATH"
 ## Ruby - Safe version detection
 export RBENV_ROOT="$HOME/.local/share/rbenv"
 export GEM_HOME="$HOME/.local/share/gem"
+export PATH="$GEM_HOME/ruby/3.2.0/bin:$PATH"
 export PATH="$RBENV_ROOT/bin:$PATH"
 eval "$(rbenv init - bash)"
 
