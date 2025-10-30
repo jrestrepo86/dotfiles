@@ -55,6 +55,7 @@ cmd("FileType", {
 		vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = event.buf, silent = true })
 	end,
 })
+
 -- Python options
 cmd({ "BufEnter", "BufWinEnter", "FileType", "WinEnter" }, {
 	pattern = "*.py",
@@ -71,15 +72,17 @@ cmd({ "BufEnter", "BufWinEnter", "FileType", "WinEnter" }, {
 	end,
 })
 
--- Yaml options
-cmd({ "BufEnter", "BufWinEnter", "FileType", "WinEnter" }, {
-	pattern = "{*.yml,*.yaml}",
+-- FIXED: Yaml options - corrected pattern matching
+cmd({ "FileType" }, {
+	pattern = { "yaml", "yml" },
 	callback = function()
-		vim.opt.tabstop = 2
-		vim.opt.shiftwidth = 2
-		vim.opt.softtabstop = 2
+		vim.opt_local.tabstop = 2
+		vim.opt_local.shiftwidth = 2
+		vim.opt_local.softtabstop = 2
+		vim.opt_local.expandtab = true
 	end,
 })
+
 -- Latex options
 cmd({ "BufEnter", "BufWinEnter", "FileType", "WinEnter" }, {
 	pattern = "*.tex",

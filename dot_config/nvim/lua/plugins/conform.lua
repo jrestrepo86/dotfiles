@@ -27,7 +27,7 @@ return {
 				-- Data formats
 				json = { "prettier" },
 				jsonc = { "prettier" },
-				yaml = { "yamlfmt" },
+				-- yaml = { "yamlfmt" },
 				toml = { "taplo" },
 				xml = { "xmlformatter" },
 

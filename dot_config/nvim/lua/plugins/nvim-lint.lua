@@ -9,9 +9,6 @@ return {
 			-- Python: ruff with F401 (unused imports) ignored
 			python = { "ruff", "mypy" },
 
-			-- LaTeX: No linter (texlab LSP handles diagnostics)
-			-- tex = {},
-
 			-- Web
 			html = { "djlint" },
 			htmldjango = { "djlint" },
@@ -23,7 +20,6 @@ return {
 
 			-- Data formats
 			json = {},
-			yaml = { "yamllint" },
 
 			-- Markdown
 			markdown = { "markdownlint-cli2", "vale" },
@@ -150,15 +146,6 @@ return {
 
 			-- Markdown: vale
 			vale = {},
-
-			-- YAML: yamllint
-			yamllint = {
-				args = {
-					"--format",
-					"parsable",
-					"-",
-				},
-			},
 
 			-- SQL: sqlfluff
 			sqlfluff = {
