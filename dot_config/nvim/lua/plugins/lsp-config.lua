@@ -16,12 +16,101 @@ return {
 			-- Get schemastore once (safe check)
 			local has_schemastore, schemastore = pcall(require, "schemastore")
 
+			-- -- ═══════════════════════════════════════════════════════════════════════════
+			-- -- PYTHON - Dual setup: basedpyright for types, ruff_lsp for linting
+			-- -- ═══════════════════════════════════════════════════════════════════════════
+			--
+			-- opts.servers.pyright = false -- ⭐ This one line fixes it!
+			-- opts.servers.basedpyright = {
+			-- 	settings = {
+			-- 		basedpyright = {
+			-- 			analysis = {
+			-- 				typeCheckingMode = "basic", -- "off" | "basic" | "strict"
+			-- 				autoSearchPaths = true,
+			-- 				useLibraryCodeForTypes = true,
+			-- 				diagnosticMode = "workspace",
+			-- 				autoImportCompletions = false,
+			-- 				-- IMPORTANT: Don't report unused imports/variables
+			-- 				diagnosticSeverityOverrides = {
+			-- 					reportUnusedImport = "none",
+			-- 					reportUnusedVariable = "none",
+			-- 					reportUnusedClass = "none",
+			-- 					reportUnusedFunction = "none",
+			-- 				},
+			-- 				stubPath = vim.fn.stdpath("data") .. "/lazy/python-type-stubs",
+			-- 			},
+			-- 		},
+			-- 	},
+			-- }
+			--
+			-- opts.servers.ruff = {
+			-- 	on_attach = function(client, bufnr)
+			-- 		-- Disable hover in favor of basedpyright
+			-- 		client.server_capabilities.hoverProvider = false
+			-- 	end,
+			-- 	init_options = {
+			-- 		settings = {
+			-- 			-- Ignore unused imports in ruff too
+			-- 			args = {
+			-- 				"--ignore=F401", -- unused imports
+			-- 				"--ignore=F403", -- star imports
+			-- 			},
+			-- 		},
+			-- 	},
+			-- }
+
 			-- ═══════════════════════════════════════════════════════════════════════════
-			-- PYTHON - Dual setup: basedpyright for types, ruff_lsp for linting
+			-- REGISTER CUSTOM PYREFLY SERVER
+			-- ═══════════════════════════════════════════════════════════════════════════
+			local lspconfig = require("lspconfig")
+			local configs = require("lspconfig.configs")
+
+			-- Only register if not already available
+			if not configs.pyrefly then
+				configs.pyrefly = {
+					default_config = {
+						cmd = { "pyrefly", "lsp" },
+						filetypes = { "python" },
+						root_dir = function(fname)
+							return lspconfig.util.root_pattern(
+								"pyrefly.toml",
+								"pyproject.toml",
+								"setup.py",
+								"setup.cfg",
+								"requirements.txt",
+								"Pipfile",
+								".git"
+							)(fname)
+						end,
+						single_file_support = true,
+						settings = {},
+					},
+					docs = {
+						description = [[
+https://pyrefly.org/
+
+Pyrefly is a faster Python type checker and language server written in Rust.
+Developed by Meta for handling large Python codebases.
+						]],
+					},
+				}
+			end
+
+			-- ═══════════════════════════════════════════════════════════════════════════
+			-- PYTHON - Multi-LSP Strategy:
+			-- • basedpyright: Type checking, hover, navigation, diagnostics
+			-- • pyrefly: Fast completions ONLY
+			-- • ruff: Linting diagnostics (formatting via conform)
 			-- ═══════════════════════════════════════════════════════════════════════════
 
-			opts.servers.pyright = false -- ⭐ This one line fixes it!
+			opts.servers.pyright = false -- ⭐ Disable regular pyright
+
+			-- basedpyright: Type checking + LSP features (NO completions)
 			opts.servers.basedpyright = {
+				on_attach = function(client, bufnr)
+					-- Explicitly disable completions - pyrefly handles this
+					client.server_capabilities.completionProvider = false
+				end,
 				settings = {
 					basedpyright = {
 						analysis = {
@@ -29,7 +118,7 @@ return {
 							autoSearchPaths = true,
 							useLibraryCodeForTypes = true,
 							diagnosticMode = "workspace",
-							autoImportCompletions = true,
+							autoImportCompletions = false, -- ⭐ Disabled for pyrefly
 							-- IMPORTANT: Don't report unused imports/variables
 							diagnosticSeverityOverrides = {
 								reportUnusedImport = "none",
@@ -43,10 +132,32 @@ return {
 				},
 			}
 
+			-- pyrefly: Fast completions ONLY
+			opts.servers.pyrefly = {
+				on_attach = function(client, bufnr)
+					-- Disable everything except completions
+					client.server_capabilities.hoverProvider = false
+					client.server_capabilities.definitionProvider = false
+					client.server_capabilities.referencesProvider = false
+					client.server_capabilities.documentSymbolProvider = false
+					client.server_capabilities.workspaceSymbolProvider = false
+					client.server_capabilities.renameProvider = false
+					client.server_capabilities.documentFormattingProvider = false
+					client.server_capabilities.documentRangeFormattingProvider = false
+					client.server_capabilities.codeActionProvider = false
+					client.server_capabilities.signatureHelpProvider = false
+					-- completionProvider stays enabled (default: true)
+				end,
+			}
+
+			-- ruff: Linting diagnostics ONLY
 			opts.servers.ruff = {
 				on_attach = function(client, bufnr)
-					-- Disable hover in favor of basedpyright
+					-- Disable hover (basedpyright handles this)
 					client.server_capabilities.hoverProvider = false
+					-- Disable formatting (conform handles this)
+					client.server_capabilities.documentFormattingProvider = false
+					client.server_capabilities.documentRangeFormattingProvider = false
 				end,
 				init_options = {
 					settings = {
@@ -403,6 +514,19 @@ return {
 			-- ═══════════════════════════════════════════════════════════════════════════
 			opts.servers.lemminx = {
 				filetypes = { "xml", "xsd", "xsl", "xslt", "svg" },
+			}
+			-- ═══════════════════════════════════════════════════════════════════════════
+			-- MATLAB
+			-- ═══════════════════════════════════════════════════════════════════════════
+			opts.servers.matlab_ls = {
+				settings = {
+					MATLAB = {
+						indexWorkspace = false,
+						installPath = "/usr/local/MATLAB/R2024b", -- Adjust to your version
+						matlabConnectionTiming = "onStart",
+						telemetry = false, -- Disable telemetry
+					},
+				},
 			}
 
 			-- ═══════════════════════════════════════════════════════════════════════════

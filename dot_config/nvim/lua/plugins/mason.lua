@@ -30,6 +30,7 @@ return {
 				"ruff", -- Fast linting
 				"mypy", -- Type checking (additional)
 				"debugpy", -- DAP for Python
+				"pyrefly", -- Fast completions
 			})
 
 			-- LaTeX
@@ -97,7 +98,10 @@ return {
 			vim.list_extend(opts.ensure_installed, {
 				"lemminx", -- XML LSP
 			})
-
+			-- MATLAB
+			vim.list_extend(opts.ensure_installed, {
+				"matlab-language-server", -- MATLAB LSP
+			})
 			-- ═══════════════════════════════════════════════════════════════════════════
 			-- FORMATTERS
 			-- ═══════════════════════════════════════════════════════════════════════════
