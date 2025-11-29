@@ -56,6 +56,12 @@ eval "$(rbenv init - bash)"
 export CONDA_DIR="$HOME/.local/share/miniconda/bin"
 export PATH="$CONDA_DIR:$PATH"
 
+## kitty (local installation)
+export KITTY_DIR="$HOME/.local/share/kitty"
+if [ -d "$KITTY_DIR/bin" ]; then
+  export PATH="$KITTY_DIR/bin:$PATH"
+fi
+
 ## opencode
 export PATH=$HOME/.opencode/bin:$PATH
 

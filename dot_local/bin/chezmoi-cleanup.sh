@@ -19,6 +19,8 @@ NC='\033[0m' # No Color
 
 # Paths
 BACKUP_DIR="$HOME/.chezmoi-cleanup-backup-$(date +%Y%m%d_%H%M%S)"
+
+# Package Manager Directories
 MINICONDA_DIR="$HOME/.local/share/miniconda"
 CARGO_HOME="$HOME/.local/share/cargo"
 RUSTUP_HOME="$HOME/.local/share/rustup"
@@ -27,10 +29,25 @@ GOPATH="$HOME/.local/go"
 PNPM_HOME="$HOME/.local/share/pnpm"
 GEM_HOME="$HOME/.local/share/gem"
 NVM_DIR="$HOME/.local/share/nvm"
+RBENV_ROOT="$HOME/.local/share/rbenv"
+
+# Application Directories
+KITTY_DIR="$HOME/.local/share/kitty"
+NVIM_INSTALL_DIR="$HOME/.local/share/nvim-install"
 FONTS_DIR="$HOME/.local/share/fonts"
 LOCAL_BIN="$HOME/.local/bin"
 DESKTOP_DIR="$HOME/.local/share/applications"
 ICON_DIR="$HOME/.local/share/icons/hicolor"
+
+# Config Directories
+MC_CONFIG="$HOME/.config/mc"
+NVIM_CONFIG="$HOME/.config/nvim"
+NVIM_DATA="$HOME/.local/share/nvim"
+NVIM_STATE="$HOME/.local/state/nvim"
+NVIM_CACHE="$HOME/.cache/nvim"
+STARSHIP_CONFIG="$HOME/.config/starship.toml"
+KITTY_CONFIG="$HOME/.config/kitty"
+ALACRITTY_CONFIG="$HOME/.config/alacritty"
 
 # Files to backup before cleanup
 BASHRC="$HOME/.bashrc"
@@ -237,14 +254,17 @@ WHAT GETS REMOVED:
   • Rust (cargo, rustup, all installed crates)
   • Go (go runtime and GOPATH)
   • pnpm (Node.js package manager)
+  • NVM (Node Version Manager and all Node versions)
+  • Ruby (rbenv, ruby-build, all installed Rubies)
   • Ruby gems (user-installed gems)
-  • NVM (if installed)
   • Nerd Fonts (all installed fonts)
   • Desktop applications (apt packages: okular, zathura, gimp, etc.)
   • Snap packages (ghostty, obsidian, chromium, VS Code)
   • Browsers (Google Chrome, Brave)
-  • User binaries (nvim, lsd, bat, fd, etc.)
+  • User binaries (nvim, lsd, bat, fd, alacritty, kitty, etc.)
   • Neovim configuration (LazyVim)
+  • Kitty terminal (local installation)
+  • Midnight Commander config
   • Git completion script
 
 WHAT GETS BACKED UP:
@@ -255,7 +275,7 @@ WHAT GETS BACKED UP:
   • ~/.git-completion.bash
 
 BACKUP LOCATION:
-  $BACKUP_DIR
+  ~/.chezmoi-cleanup-backup-YYYYMMDD_HHMMSS
 
 EXAMPLES:
   # Interactive cleanup (asks for each component)
@@ -327,6 +347,14 @@ if [ "$DRY_RUN" = true ]; then
   [ -d "$PNPM_HOME" ] && echo "  • pnpm: $PNPM_HOME"
   [ -d "$GEM_HOME" ] && echo "  • Ruby gems: $GEM_HOME"
   [ -d "$NVM_DIR" ] && echo "  • NVM: $NVM_DIR"
+  [ -d "$RBENV_ROOT" ] && echo "  • rbenv: $RBENV_ROOT"
+
+  echo ""
+  echo "Applications:"
+  [ -d "$KITTY_DIR" ] && echo "  • Kitty: $KITTY_DIR"
+  [ -d "$NVIM_INSTALL_DIR" ] && echo "  • Neovim install: $NVIM_INSTALL_DIR"
+  [ -f "$LOCAL_BIN/nvim" ] && echo "  • Neovim binary: $LOCAL_BIN/nvim"
+  [ -f "$LOCAL_BIN/kitty" ] && echo "  • Kitty symlink: $LOCAL_BIN/kitty"
 
   echo ""
   echo "Desktop Applications (apt):"
@@ -348,16 +376,22 @@ if [ "$DRY_RUN" = true ]; then
 
   echo ""
   echo "User binaries:"
-  [ -f "$LOCAL_BIN/nvim" ] && echo "  • Neovim: $LOCAL_BIN/nvim"
-  [ -f "$LOCAL_BIN/lsd" ] && echo "  • lsd: $LOCAL_BIN/lsd"
-  [ -f "$LOCAL_BIN/bat" ] && echo "  • bat: $LOCAL_BIN/bat"
-  [ -f "$LOCAL_BIN/fd" ] && echo "  • fd: $LOCAL_BIN/fd"
-  [ -f "$LOCAL_BIN/alacritty" ] && echo "  • Alacritty: $LOCAL_BIN/alacritty"
+  for bin in nvim lsd bat fd alacritty tree-sitter rg kitty kitten; do
+    [ -f "$LOCAL_BIN/$bin" ] && echo "  • $bin: $LOCAL_BIN/$bin"
+  done
+
+  echo ""
+  echo "Configuration directories:"
+  [ -d "$NVIM_CONFIG" ] && echo "  • Neovim config: $NVIM_CONFIG"
+  [ -d "$NVIM_DATA" ] && echo "  • Neovim data: $NVIM_DATA"
+  [ -d "$MC_CONFIG" ] && echo "  • MC config: $MC_CONFIG"
+  [ -d "$KITTY_CONFIG" ] && echo "  • Kitty config: $KITTY_CONFIG"
+  [ -d "$ALACRITTY_CONFIG" ] && echo "  • Alacritty config: $ALACRITTY_CONFIG"
+  [ -f "$STARSHIP_CONFIG" ] && echo "  • Starship config: $STARSHIP_CONFIG"
 
   echo ""
   echo "Other:"
   [ -d "$FONTS_DIR" ] && [ -n "$(find "$FONTS_DIR" -name "*Nerd*" 2> /dev/null)" ] && echo "  • Nerd Fonts: $FONTS_DIR"
-  [ -d "$HOME/.config/nvim" ] && echo "  • Neovim config: ~/.config/nvim"
   [ -f "$GIT_COMPLETION" ] && echo "  • Git completion: $GIT_COMPLETION"
 
   echo -e "\nWould backup:"
@@ -382,7 +416,8 @@ echo "  • Development tools (Python, Node.js, Rust, Go, Ruby)"
 echo "  • Desktop applications (GIMP, Okular, Zathura, etc.)"
 echo "  • Snap packages (Ghostty, Obsidian, VS Code, Chromium)"
 echo "  • Browsers (Chrome, Brave)"
-echo "  • Terminal tools (Neovim, bat, lsd, fd, fzf, lazygit)"
+echo "  • Terminal tools (Neovim, Kitty, Alacritty, bat, lsd, fd, fzf, lazygit)"
+echo "  • Ghostty (via snap)"
 echo "  • Fonts and configurations"
 echo ""
 echo -e "${YELLOW}⚠ WARNING: This action cannot be undone!${NC}"
@@ -475,9 +510,7 @@ print_header "Removing Miniconda (Python & Data Science)"
 remove_directory "$MINICONDA_DIR" "Miniconda"
 
 # Remove conda config files
-if [ -f "$HOME/.condarc" ]; then
-  remove_file "$HOME/.condarc" "Conda config"
-fi
+remove_file "$HOME/.condarc" "Conda config"
 
 ##################################################
 # Remove Rust
@@ -504,31 +537,42 @@ remove_directory "$GOPATH" "GOPATH"
 print_header "Removing pnpm"
 
 remove_directory "$PNPM_HOME" "pnpm"
-
-# Remove pnpm config
-if [ -f "$HOME/.pnpmrc" ]; then
-  remove_file "$HOME/.pnpmrc" "pnpm config"
-fi
+remove_file "$HOME/.pnpmrc" "pnpm config"
 
 ##################################################
-# Remove Ruby Gems
+# Remove NVM
 ##################################################
 
-print_header "Removing Ruby Gems"
-
-remove_directory "$GEM_HOME" "Ruby gems"
-
-if [ -f "$HOME/.gemrc" ]; then
-  remove_file "$HOME/.gemrc" "Gem config"
-fi
-
-##################################################
-# Remove NVM (if installed)
-##################################################
-
-print_header "Removing NVM (if present)"
+print_header "Removing NVM (Node Version Manager)"
 
 remove_directory "$NVM_DIR" "NVM"
+
+##################################################
+# Remove Ruby (rbenv)
+##################################################
+
+print_header "Removing Ruby (rbenv)"
+
+remove_directory "$RBENV_ROOT" "rbenv"
+remove_directory "$GEM_HOME" "Ruby gems"
+remove_file "$HOME/.gemrc" "Gem config"
+
+##################################################
+# Remove Kitty Terminal
+##################################################
+
+print_header "Removing Kitty Terminal"
+
+remove_directory "$KITTY_DIR" "Kitty installation"
+remove_file "$LOCAL_BIN/kitty" "Kitty symlink"
+remove_file "$LOCAL_BIN/kitten" "Kitten symlink"
+remove_directory "$KITTY_CONFIG" "Kitty config"
+
+# Remove terminfo
+if [ -f "$HOME/.terminfo/x/xterm-kitty" ]; then
+  rm -f "$HOME/.terminfo/x/xterm-kitty"
+  print_success "Removed Kitty terminfo"
+fi
 
 ##################################################
 # Remove User Binaries
@@ -544,14 +588,24 @@ BINARIES=(
   "fd"
   "alacritty"
   "tree-sitter"
+  "rg"
   "mmdc"
   "fzf"
   "lazygit"
+  "starship"
 )
 
 for binary in "${BINARIES[@]}"; do
   remove_file "$LOCAL_BIN/$binary" "$binary"
 done
+
+##################################################
+# Remove Neovim Installation
+##################################################
+
+print_header "Removing Neovim"
+
+remove_directory "$NVIM_INSTALL_DIR" "Neovim installation"
 
 ##################################################
 # Remove Nerd Fonts
@@ -561,19 +615,11 @@ print_header "Removing Nerd Fonts"
 
 # Only remove Nerd Fonts, not all fonts
 if [ -d "$FONTS_DIR" ]; then
-  if [ "$AUTO_YES" = true ]; then
-    find "$FONTS_DIR" -name "*Nerd*" -delete 2> /dev/null || true
-    print_success "Removed Nerd Fonts"
-
-    # Update font cache
-    if command -v fc-cache > /dev/null 2>&1; then
-      fc-cache -f "$FONTS_DIR" 2> /dev/null || true
-      print_success "Font cache updated"
-    fi
-  else
-    if confirm "Remove all Nerd Fonts from $FONTS_DIR?"; then
+  NERD_FONTS=$(find "$FONTS_DIR" -name "*Nerd*" 2> /dev/null | wc -l)
+  if [ "$NERD_FONTS" -gt 0 ]; then
+    if [ "$AUTO_YES" = true ]; then
       find "$FONTS_DIR" -name "*Nerd*" -delete 2> /dev/null || true
-      print_success "Removed Nerd Fonts"
+      print_success "Removed $NERD_FONTS Nerd Font files"
 
       # Update font cache
       if command -v fc-cache > /dev/null 2>&1; then
@@ -581,8 +627,21 @@ if [ -d "$FONTS_DIR" ]; then
         print_success "Font cache updated"
       fi
     else
-      print_warning "Skipped Nerd Fonts"
+      if confirm "Remove $NERD_FONTS Nerd Font files from $FONTS_DIR?"; then
+        find "$FONTS_DIR" -name "*Nerd*" -delete 2> /dev/null || true
+        print_success "Removed Nerd Fonts"
+
+        # Update font cache
+        if command -v fc-cache > /dev/null 2>&1; then
+          fc-cache -f "$FONTS_DIR" 2> /dev/null || true
+          print_success "Font cache updated"
+        fi
+      else
+        print_warning "Skipped Nerd Fonts"
+      fi
     fi
+  else
+    print_info "No Nerd Fonts found"
   fi
 fi
 
@@ -595,18 +654,16 @@ print_header "Removing Desktop Launchers"
 remove_file "$DESKTOP_DIR/alacritty.desktop" "Alacritty launcher"
 remove_file "$DESKTOP_DIR/kitty.desktop" "Kitty launcher"
 
-# Remove icons (only if we removed launchers)
-if [ ! -f "$DESKTOP_DIR/alacritty.desktop" ] && [ ! -f "$DESKTOP_DIR/kitty.desktop" ]; then
-  if [ -d "$ICON_DIR" ]; then
-    find "$ICON_DIR" -name "Alacritty.*" -delete 2> /dev/null || true
-    find "$ICON_DIR" -name "kitty.*" -delete 2> /dev/null || true
-    print_success "Removed application icons"
-  fi
+# Remove icons
+if [ -d "$ICON_DIR" ]; then
+  find "$ICON_DIR" -name "Alacritty.*" -delete 2> /dev/null || true
+  find "$ICON_DIR" -name "kitty.*" -delete 2> /dev/null || true
+  print_success "Removed application icons"
+fi
 
-  # Update desktop database
-  if command -v update-desktop-database > /dev/null 2>&1; then
-    update-desktop-database "$DESKTOP_DIR" 2> /dev/null || true
-  fi
+# Update desktop database
+if command -v update-desktop-database > /dev/null 2>&1; then
+  update-desktop-database "$DESKTOP_DIR" 2> /dev/null || true
 fi
 
 ##################################################
@@ -618,27 +675,27 @@ print_header "Removing Git Completion"
 remove_file "$GIT_COMPLETION" "Git completion script"
 
 ##################################################
-# Remove LazyVim/Neovim Configuration
+# Remove Configuration Directories
 ##################################################
 
-print_header "Removing Neovim Configuration"
+print_header "Removing Configuration Files"
 
-# Only proceed if any Neovim directories exist
-if [ -d "$HOME/.config/nvim" ] || [ -d "$HOME/.local/share/nvim" ] \
-  || [ -d "$HOME/.local/state/nvim" ] || [ -d "$HOME/.cache/nvim" ]; then
+# Neovim config and data
+if [ -d "$NVIM_CONFIG" ] || [ -d "$NVIM_DATA" ] \
+  || [ -d "$NVIM_STATE" ] || [ -d "$NVIM_CACHE" ]; then
 
   if [ "$AUTO_YES" = true ]; then
-    rm -rf "$HOME/.config/nvim" 2> /dev/null || true
-    rm -rf "$HOME/.local/share/nvim" 2> /dev/null || true
-    rm -rf "$HOME/.local/state/nvim" 2> /dev/null || true
-    rm -rf "$HOME/.cache/nvim" 2> /dev/null || true
+    rm -rf "$NVIM_CONFIG" 2> /dev/null || true
+    rm -rf "$NVIM_DATA" 2> /dev/null || true
+    rm -rf "$NVIM_STATE" 2> /dev/null || true
+    rm -rf "$NVIM_CACHE" 2> /dev/null || true
     print_success "Removed Neovim configuration and data"
   else
     if confirm "Remove Neovim configuration and data?"; then
-      rm -rf "$HOME/.config/nvim" 2> /dev/null || true
-      rm -rf "$HOME/.local/share/nvim" 2> /dev/null || true
-      rm -rf "$HOME/.local/state/nvim" 2> /dev/null || true
-      rm -rf "$HOME/.cache/nvim" 2> /dev/null || true
+      rm -rf "$NVIM_CONFIG" 2> /dev/null || true
+      rm -rf "$NVIM_DATA" 2> /dev/null || true
+      rm -rf "$NVIM_STATE" 2> /dev/null || true
+      rm -rf "$NVIM_CACHE" 2> /dev/null || true
       print_success "Removed Neovim configuration and data"
     else
       print_warning "Skipped Neovim configuration"
@@ -647,6 +704,15 @@ if [ -d "$HOME/.config/nvim" ] || [ -d "$HOME/.local/share/nvim" ] \
 else
   print_info "Neovim configuration not found (already clean)"
 fi
+
+# MC config
+remove_directory "$MC_CONFIG" "Midnight Commander config"
+
+# Starship config
+remove_file "$STARSHIP_CONFIG" "Starship config"
+
+# Alacritty config
+remove_directory "$ALACRITTY_CONFIG" "Alacritty config"
 
 ##################################################
 # Summary
@@ -659,14 +725,17 @@ echo "  ✓ Miniconda (Python + Data Science packages)"
 echo "  ✓ Rust (Cargo + Rustup)"
 echo "  ✓ Go runtime and packages"
 echo "  ✓ pnpm (Node.js package manager)"
-echo "  ✓ Ruby gems"
+echo "  ✓ NVM (Node Version Manager)"
+echo "  ✓ Ruby (rbenv + gems)"
 echo "  ✓ Desktop applications (apt packages)"
-echo "  ✓ Snap packages (Ghostty, Obsidian, VS Code, etc.)"
+echo "  ✓ Snap packages (Ghostty, Obsidian, VS Code, Chromium)"
 echo "  ✓ Browsers (Chrome, Brave)"
 echo "  ✓ User binaries (nvim, lsd, bat, fzf, lazygit, etc.)"
+echo "  ✓ Kitty terminal"
 echo "  ✓ Nerd Fonts"
 echo "  ✓ Desktop launchers"
 echo "  ✓ Neovim configuration"
+echo "  ✓ Midnight Commander configuration"
 echo "  ✓ Git completion"
 echo ""
 
@@ -689,7 +758,7 @@ cat << EOF
    ${GREEN}source ~/.bashrc${NC}
 
 4. Verify installations:
-   ${GREEN}which nvim python cargo go ghostty${NC}
+   ${GREEN}which nvim python cargo go kitty ghostty${NC}
    ${GREEN}snap list${NC}
 
 Note: Your dotfiles (.bashrc, .bash_profile) may need manual cleanup

@@ -6,158 +6,310 @@ MINICONDA_DIR="$HOME/.local/share/miniconda"
 PNPM_HOME="$HOME/.local/share/pnpm"
 CARGO_HOME="$HOME/.local/share/cargo"
 NVM_DIR="$HOME/.local/share/nvm"
-NVIM_CONFIG="$HOME/.config/nvim"
+RBENV_ROOT="$HOME/.local/share/rbenv"
+NVIM_BIN="$HOME/.local/bin/nvim"
 
-echo "Installing LazyVim dependencies..."
+echo "========================================"
+echo "LazyVim Dependencies Installation"
+echo "========================================"
 echo ""
+
+# Check if neovim is installed
+if [ ! -f "$NVIM_BIN" ]; then
+  echo "Warning: Neovim not found at $NVIM_BIN"
+  echo "Make sure neovim installation script ran successfully"
+fi
 
 # Track what's missing
 MISSING_DEPS=()
+INSTALLED_DEPS=()
+
+##################################################
+# CHECK AVAILABLE PACKAGE MANAGERS
+##################################################
+echo "Checking available package managers..."
+echo ""
 
 # Check pnpm
-if [ ! -f "$PNPM_HOME/pnpm" ]; then
-  echo "Warning: pnpm not found at $PNPM_HOME"
+PNPM_BIN=""
+if [ -f "$PNPM_HOME/pnpm" ]; then
+  PNPM_BIN="$PNPM_HOME/pnpm"
+  echo "✓ pnpm found at $PNPM_BIN"
+else
+  echo "✗ pnpm not found"
   MISSING_DEPS+=("pnpm")
 fi
 
 # Check cargo
-if [ ! -f "$CARGO_HOME/bin/cargo" ]; then
-  echo "Warning: cargo not found at $CARGO_HOME"
+CARGO_BIN=""
+if [ -f "$CARGO_HOME/bin/cargo" ]; then
+  CARGO_BIN="$CARGO_HOME/bin/cargo"
+  echo "✓ cargo found at $CARGO_BIN"
+else
+  echo "✗ cargo not found"
   MISSING_DEPS+=("cargo")
 fi
 
-# Check pip
-if [ ! -f "$MINICONDA_DIR/bin/pip" ]; then
-  echo "Warning: pip not found at $MINICONDA_DIR"
+# Check pip (from conda)
+PIP_BIN=""
+if [ -f "$MINICONDA_DIR/bin/pip" ]; then
+  PIP_BIN="$MINICONDA_DIR/bin/pip"
+  echo "✓ pip found at $PIP_BIN"
+else
+  echo "✗ pip not found"
   MISSING_DEPS+=("pip")
 fi
 
 # Check node/npm (from nvm)
+NODE_BIN=""
+NPM_BIN=""
 if [ -s "$NVM_DIR/nvm.sh" ]; then
+  # Load nvm
+  export NVM_DIR="$NVM_DIR"
   # shellcheck disable=SC1091
-  source "$NVM_DIR/nvm.sh"
-  if ! command -v node &> /dev/null || ! command -v npm &> /dev/null; then
-    echo "Warning: node/npm not available from nvm"
-    MISSING_DEPS+=("node/npm")
+  \. "$NVM_DIR/nvm.sh"
+
+  if command -v node &> /dev/null; then
+    NODE_BIN=$(command -v node)
+    echo "✓ node found at $NODE_BIN ($(node --version))"
+  else
+    echo "✗ node not found (nvm loaded but no node installed)"
+    MISSING_DEPS+=("node")
+  fi
+
+  if command -v npm &> /dev/null; then
+    NPM_BIN=$(command -v npm)
+    echo "✓ npm found at $NPM_BIN"
+  else
+    echo "✗ npm not found"
+    MISSING_DEPS+=("npm")
   fi
 else
-  echo "Warning: nvm not found at $NVM_DIR"
+  echo "✗ nvm not found at $NVM_DIR"
   MISSING_DEPS+=("nvm")
 fi
 
+# Check gem (from rbenv)
+GEM_BIN=""
+if [ -f "$RBENV_ROOT/shims/gem" ]; then
+  GEM_BIN="$RBENV_ROOT/shims/gem"
+  echo "✓ gem found at $GEM_BIN"
+elif [ -f "$RBENV_ROOT/versions/3.2.6/bin/gem" ]; then
+  GEM_BIN="$RBENV_ROOT/versions/3.2.6/bin/gem"
+  echo "✓ gem found at $GEM_BIN"
+else
+  echo "⚠ gem not found (ruby may not be installed)"
+fi
+
+echo ""
+
 if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
-  echo ""
-  echo "Missing dependencies: ${MISSING_DEPS[*]}"
+  echo "⚠ Missing package managers: ${MISSING_DEPS[*]}"
   echo "Some LazyVim features may not work properly"
   echo ""
 fi
 
-# Install mermaid-cli via pnpm
-if [ -f "$PNPM_HOME/pnpm" ]; then
-  echo "Installing @mermaid-js/mermaid-cli..."
-  if "$PNPM_HOME/pnpm" install -g @mermaid-js/mermaid-cli; then
-    echo "✓ mermaid-cli installed"
+##################################################
+# INSTALL PNPM PACKAGES
+##################################################
+echo "Installing pnpm packages..."
+echo "----------------------------"
+
+if [ -n "$PNPM_BIN" ]; then
+  # mermaid-cli for diagram rendering
+  echo "→ @mermaid-js/mermaid-cli"
+  if "$PNPM_BIN" install -g @mermaid-js/mermaid-cli 2> /dev/null; then
+    echo "  ✓ installed"
+    INSTALLED_DEPS+=("mermaid-cli")
   else
-    echo "✗ mermaid-cli installation failed"
+    echo "  ✗ failed"
   fi
 
-  echo "Installing neovim package via pnpm..."
-  if "$PNPM_HOME/pnpm" install -g neovim; then
-    echo "✓ neovim package installed"
+  # neovim node package
+  echo "→ neovim (node provider)"
+  if "$PNPM_BIN" install -g neovim 2> /dev/null; then
+    echo "  ✓ installed"
+    INSTALLED_DEPS+=("neovim-node")
   else
-    echo "✗ neovim package installation failed"
+    echo "  ✗ failed"
   fi
 
-  echo "Installing mcp-hub via pnpm..."
-  if "$PNPM_HOME/pnpm" add -g mcp-hub@latest; then
-    echo "✓ mcp-hub package installed"
+  # mcp-hub for AI features
+  echo "→ mcp-hub"
+  if "$PNPM_BIN" add -g mcp-hub@latest 2> /dev/null; then
+    echo "  ✓ installed"
+    INSTALLED_DEPS+=("mcp-hub")
   else
-    echo "✗ mcp-hub package installation failed"
+    echo "  ✗ failed"
+  fi
+elif [ -n "$NPM_BIN" ]; then
+  echo "Using npm as fallback..."
+
+  echo "→ neovim (node provider)"
+  if "$NPM_BIN" install -g neovim 2> /dev/null; then
+    echo "  ✓ installed via npm"
+    INSTALLED_DEPS+=("neovim-node")
+  else
+    echo "  ✗ failed"
   fi
 else
-  echo "Skipping pnpm packages (pnpm not available)"
-
-  # Fallback: try using npm from nvm if available
-  if command -v npm &> /dev/null; then
-    echo ""
-    echo "Attempting to use npm as fallback..."
-
-    if npm install -g neovim; then
-      echo "✓ neovim package installed via npm"
-    else
-      echo "✗ neovim package installation via npm failed"
-    fi
-  fi
+  echo "⚠ Skipping pnpm/npm packages (no package manager available)"
 fi
 
-# Install fd-find via cargo
-if [ -f "$CARGO_HOME/bin/cargo" ]; then
-  echo "Installing fd-find..."
-  if "$CARGO_HOME/bin/cargo" install fd-find; then
-    echo "✓ fd-find installed"
+echo ""
+
+##################################################
+# INSTALL CARGO PACKAGES
+##################################################
+echo "Installing cargo packages..."
+echo "----------------------------"
+
+if [ -n "$CARGO_BIN" ]; then
+  # fd-find for telescope
+  echo "→ fd-find"
+  if [ -f "$CARGO_HOME/bin/fd" ]; then
+    echo "  ✓ already installed"
+    INSTALLED_DEPS+=("fd-find")
+  elif "$CARGO_BIN" install fd-find 2> /dev/null; then
+    echo "  ✓ installed"
+    INSTALLED_DEPS+=("fd-find")
   else
-    echo "✗ fd-find installation failed"
+    echo "  ✗ failed"
   fi
 
-  echo "Installing tree-sitter-cli (this may take a while)..."
-  if "$CARGO_HOME/bin/cargo" install --locked tree-sitter-cli; then
-    echo "✓ tree-sitter-cli installed"
+  # tree-sitter-cli for parser management
+  echo "→ tree-sitter-cli (this may take a while)..."
+  if [ -f "$CARGO_HOME/bin/tree-sitter" ]; then
+    echo "  ✓ already installed"
+    INSTALLED_DEPS+=("tree-sitter-cli")
+  elif "$CARGO_BIN" install --locked tree-sitter-cli 2> /dev/null; then
+    echo "  ✓ installed"
+    INSTALLED_DEPS+=("tree-sitter-cli")
   else
-    echo "✗ tree-sitter-cli installation failed"
+    echo "  ✗ failed"
+  fi
+
+  # ripgrep for telescope live_grep
+  echo "→ ripgrep"
+  if [ -f "$CARGO_HOME/bin/rg" ]; then
+    echo "  ✓ already installed"
+    INSTALLED_DEPS+=("ripgrep")
+  elif "$CARGO_BIN" install ripgrep 2> /dev/null; then
+    echo "  ✓ installed"
+    INSTALLED_DEPS+=("ripgrep")
+  else
+    echo "  ✗ failed"
   fi
 else
-  echo "Skipping cargo packages (cargo not available)"
+  echo "⚠ Skipping cargo packages (cargo not available)"
 fi
 
-# Install pynvim via pip
-if [ -f "$MINICONDA_DIR/bin/pip" ]; then
-  echo "Installing pynvim..."
-  if "$MINICONDA_DIR/bin/pip" install pynvim; then
-    echo "✓ pynvim installed"
+echo ""
+
+##################################################
+# INSTALL PYTHON PACKAGES
+##################################################
+echo "Installing Python packages..."
+echo "----------------------------"
+
+if [ -n "$PIP_BIN" ]; then
+  # pynvim for Python provider
+  echo "→ pynvim"
+  if "$PIP_BIN" show pynvim &> /dev/null; then
+    echo "  ✓ already installed"
+    INSTALLED_DEPS+=("pynvim")
+  elif "$PIP_BIN" install pynvim 2> /dev/null; then
+    echo "  ✓ installed"
+    INSTALLED_DEPS+=("pynvim")
   else
-    echo "✗ pynvim installation failed"
+    echo "  ✗ failed"
   fi
 else
-  echo "Skipping python packages (pip not available)"
+  echo "⚠ Skipping Python packages (pip not available)"
 fi
 
-# Install neovim gem via gem
-if [ -f "$MINICONDA_DIR/bin/gem" ]; then
-  echo "Installing neovim gem..."
-  if "$MINICONDA_DIR/bin/gem" install neovim; then
-    echo "✓ neovim gem installed"
+echo ""
+
+##################################################
+# INSTALL RUBY PACKAGES
+##################################################
+echo "Installing Ruby packages..."
+echo "----------------------------"
+
+if [ -n "$GEM_BIN" ]; then
+  # neovim gem for Ruby provider
+  echo "→ neovim (ruby provider)"
+  if "$GEM_BIN" list neovim 2> /dev/null | grep -q "^neovim "; then
+    echo "  ✓ already installed"
+    INSTALLED_DEPS+=("neovim-ruby")
+  elif "$GEM_BIN" install neovim 2> /dev/null; then
+    echo "  ✓ installed"
+    INSTALLED_DEPS+=("neovim-ruby")
   else
-    echo "✗ neovim gem installation failed"
+    echo "  ✗ failed"
   fi
 else
-  echo "Skipping ruby packages (gem not available)"
+  echo "⚠ Skipping Ruby packages (gem not available)"
 fi
 
-# Backup existing nvim config if it exists and is not managed by chezmoi
+echo ""
+
+##################################################
+# BACKUP EXISTING CONFIG (if not managed by chezmoi)
+##################################################
+NVIM_CONFIG="$HOME/.config/nvim"
 if [ -d "$NVIM_CONFIG" ] && [ ! -L "$NVIM_CONFIG" ]; then
-  BACKUP_DIR="$NVIM_CONFIG.backup.$(date +%Y%m%d_%H%M%S)"
-  echo ""
-  echo "Backing up existing nvim config to $BACKUP_DIR"
-  mv "$NVIM_CONFIG" "$BACKUP_DIR"
+  # Check if it's a git repo (LazyVim setup) or just files
+  if [ -d "$NVIM_CONFIG/.git" ]; then
+    echo "⚠ Existing nvim config appears to be a git repo"
+    echo "   Skipping backup - chezmoi will manage this"
+  else
+    BACKUP_DIR="$NVIM_CONFIG.backup.$(date +%Y%m%d_%H%M%S)"
+    echo "Backing up existing nvim config to $BACKUP_DIR"
+    mv "$NVIM_CONFIG" "$BACKUP_DIR"
+  fi
+fi
+
+##################################################
+# SUMMARY
+##################################################
+echo ""
+echo "========================================"
+echo "Installation Summary"
+echo "========================================"
+echo ""
+
+echo "Installed dependencies:"
+if [ ${#INSTALLED_DEPS[@]} -gt 0 ]; then
+  for dep in "${INSTALLED_DEPS[@]}"; do
+    echo "  ✓ $dep"
+  done
+else
+  echo "  (none)"
 fi
 
 echo ""
-echo "LazyVim dependencies installation complete!"
-echo ""
-echo "Installation summary:"
-echo "-------------------"
+echo "Verification:"
+echo "----------------------------"
+
+# Check individual tools
 [ -f "$PNPM_HOME/mmdc" ] && echo "✓ mermaid-cli" || echo "✗ mermaid-cli"
 [ -f "$CARGO_HOME/bin/fd" ] && echo "✓ fd-find" || echo "✗ fd-find"
 [ -f "$CARGO_HOME/bin/tree-sitter" ] && echo "✓ tree-sitter-cli" || echo "✗ tree-sitter-cli"
-"$MINICONDA_DIR/bin/pip" show pynvim &> /dev/null && echo "✓ pynvim" || echo "✗ pynvim"
-"$MINICONDA_DIR/bin/gem" list neovim &> /dev/null && echo "✓ neovim gem" || echo "✗ neovim gem"
-command -v node &> /dev/null && echo "✓ node (via nvm): $(node --version)" || echo "✗ node"
-command -v npm &> /dev/null && echo "✓ npm (via nvm): $(npm --version)" || echo "✗ npm"
+[ -f "$CARGO_HOME/bin/rg" ] && echo "✓ ripgrep" || echo "✗ ripgrep"
+[ -n "$PIP_BIN" ] && "$PIP_BIN" show pynvim &> /dev/null && echo "✓ pynvim" || echo "✗ pynvim"
+[ -n "$GEM_BIN" ] && "$GEM_BIN" list neovim 2> /dev/null | grep -q "^neovim " && echo "✓ neovim gem" || echo "⚠ neovim gem"
+[ -n "$NODE_BIN" ] && echo "✓ node: $(node --version 2> /dev/null || echo 'error')" || echo "✗ node"
+[ -n "$NPM_BIN" ] && echo "✓ npm: $(npm --version 2> /dev/null || echo 'error')" || echo "✗ npm"
+
 echo ""
 echo "Next steps:"
-echo "1. Your nvim config is managed by chezmoi at ~/.local/share/chezmoi/dot_config/nvim/"
+echo "----------------------------"
+echo "1. Your nvim config is managed by chezmoi"
 echo "2. Launch nvim - LazyVim will install plugins on first run"
 echo "3. Run :checkhealth in nvim to verify everything works"
 echo ""
-echo "Note: If node/npm commands aren't found, restart your shell or run:"
+echo "If node/npm commands aren't found, restart your shell or run:"
 echo '      source "$HOME/.bashrc"'
+echo ""
+echo "Installation complete!"

@@ -1,0 +1,35 @@
+GROUP "Local Directories"
+    ENTRY "Home" URL "~"
+    ENTRY "Downloads" URL "~/Downloads"
+    ENTRY "Documents" URL "~/Documents"
+    ENTRY "Dropbox" URL "~/Dropbox"
+ENDGROUP
+
+GROUP "Development"
+    ENTRY "Config" URL "~/.config"
+    ENTRY "Local Bin" URL "~/.local/bin"
+    ENTRY "Local Share" URL "~/.local/share"
+    ENTRY "Neovim Config" URL "~/.config/nvim"
+    ENTRY "Chezmoi Source" URL "~/.local/share/chezmoi"
+ENDGROUP
+
+GROUP "Remote Servers (SSH)"
+    ENTRY "Neptuno (port 22)" URL "sh://jrestrepo@neptuno/"
+    ENTRY "Neptuno2 (port 77)" URL "sh://jrestrepo@neptuno2/"
+    ENTRY "Jupiter (via neptuno)" URL "sh://jrestrepo@jupiter/"
+    ENTRY "Jupiter (via neptuno2)" URL "sh://jrestrepo@Jupiter/"
+    ENTRY "Jupiter Root (via neptuno)" URL "sh://root@rootJupiter/"
+    ENTRY "Jupiter Root (via neptuno2)" URL "sh://root@rootJupiter2/"
+ENDGROUP
+
+GROUP "Remote Directories"
+    ENTRY "Neptuno Home" URL "sh://jrestrepo@neptuno/home/jrestrepo"
+    ENTRY "Jupiter Home" URL "sh://jrestrepo@jupiter/home/jrestrepo"
+ENDGROUP
+
+GROUP "System"
+    ENTRY "Root" URL "/"
+    ENTRY "Tmp" URL "/tmp"
+    ENTRY "Var Log" URL "/var/log"
+    ENTRY "Etc" URL "/etc"
+ENDGROUP

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Download git completion script
-# File: chezmoiscripts/run_once_before_install-git-completion.sh
+# File: chezmoiscripts/run_once_before_01_install-git-completion.sh
 set -e
 
 GIT_COMPLETION_FILE="$HOME/.git-completion.bash"
@@ -36,8 +36,8 @@ if [ ! -s "$GIT_COMPLETION_FILE" ]; then
   exit 1
 fi
 
-echo "Git completion installed successfully at $GIT_COMPLETION_FILE"
-echo "File size: $(wc -c <"$GIT_COMPLETION_FILE") bytes"
+echo "✓ Git completion installed at $GIT_COMPLETION_FILE"
+echo "File size: $(wc -c < "$GIT_COMPLETION_FILE") bytes"
 echo ""
 echo "To test:"
 echo "  source ~/.bashrc"
