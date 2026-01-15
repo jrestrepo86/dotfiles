@@ -45,9 +45,9 @@ else
     # Install build dependencies (if sudo available)
     DEPS="cmake pkg-config libfreetype6-dev libfontconfig1-dev libxcb-xfixes0-dev libxkbcommon-dev python3"
 
-    if command -v sudo &>/dev/null; then
+    if command -v sudo &> /dev/null; then
       echo "Installing build dependencies (requires sudo)..."
-      if sudo apt-get update -qq && sudo apt-get install -y -qq $DEPS 2>/dev/null; then
+      if sudo apt-get update -qq && sudo apt-get install -y -qq $DEPS 2> /dev/null; then
         echo "✓ Dependencies installed"
       else
         echo "⚠ Could not install all dependencies - build may fail"
@@ -77,7 +77,7 @@ if [ "$ALACRITTY_INSTALLED" = true ]; then
   echo "Creating desktop entry..."
   echo "----------------------------"
 
-  cat >"$DESKTOP_DIR/alacritty.desktop" <<EOF
+  cat > "$DESKTOP_DIR/alacritty.desktop" << EOF
 [Desktop Entry]
 Type=Application
 TryExec=$CARGO_HOME/bin/alacritty
@@ -102,15 +102,15 @@ EOF
   # Download Alacritty icons
   echo "Downloading Alacritty icons..."
 
-  if wget -q "https://raw.githubusercontent.com/alacritty/alacritty/master/extra/logo/alacritty-term.svg" \
-    -O "$ICON_DIR/scalable/apps/Alacritty.svg" 2>/dev/null; then
+  if wget -4 "https://raw.githubusercontent.com/alacritty/alacritty/master/extra/logo/alacritty-term.svg" \
+    -O "$ICON_DIR/scalable/apps/Alacritty.svg" 2> /dev/null; then
     echo "  ✓ SVG icon"
   else
     echo "  ⚠ Could not download SVG icon"
   fi
 
-  if wget -q "https://raw.githubusercontent.com/alacritty/alacritty/master/extra/logo/compat/alacritty-term.png" \
-    -O "$ICON_DIR/128x128/apps/Alacritty.png" 2>/dev/null; then
+  if wget -4 "https://raw.githubusercontent.com/alacritty/alacritty/master/extra/logo/compat/alacritty-term.png" \
+    -O "$ICON_DIR/128x128/apps/Alacritty.png" 2> /dev/null; then
     echo "  ✓ PNG icon"
   else
     echo "  ⚠ Could not download PNG icon"
@@ -122,19 +122,19 @@ EOF
   echo ""
   echo "Updating desktop database..."
 
-  if command -v update-desktop-database &>/dev/null; then
-    update-desktop-database "$DESKTOP_DIR" 2>/dev/null || true
+  if command -v update-desktop-database &> /dev/null; then
+    update-desktop-database "$DESKTOP_DIR" 2> /dev/null || true
     echo "✓ Desktop database updated"
   fi
 
-  if command -v gtk-update-icon-cache &>/dev/null; then
-    gtk-update-icon-cache -f -t "$ICON_DIR" 2>/dev/null || true
+  if command -v gtk-update-icon-cache &> /dev/null; then
+    gtk-update-icon-cache -f -t "$ICON_DIR" 2> /dev/null || true
     echo "✓ Icon cache updated"
   fi
 
   # Force menu update
-  if command -v xdg-desktop-menu &>/dev/null; then
-    xdg-desktop-menu forceupdate 2>/dev/null || true
+  if command -v xdg-desktop-menu &> /dev/null; then
+    xdg-desktop-menu forceupdate 2> /dev/null || true
   fi
 fi
 
