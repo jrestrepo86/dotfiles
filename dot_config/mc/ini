@@ -64,7 +64,7 @@ double_click_speed=250
 classic_progressbar=true
 navigate_with_hierarchic_menu=false
 keyboard_key_timeout_us=1000000
-skin=default
+skin=onedark
 filepos_max_saved_entries=1024
 
 [Layout]

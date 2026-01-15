@@ -7,9 +7,6 @@ FONTS_DIR="$HOME/.local/share/fonts"
 TMP_DIR="/tmp/nerdfonts-install-$$"
 
 # List of fonts to install
-# Edit this array to add/remove fonts you want
-# Font names must match the release filenames on GitHub
-# See: https://github.com/ryanoasis/nerd-fonts/releases
 FONTS_TO_INSTALL=(
   "Iosevka"
   "IosevkaTerm"
@@ -115,15 +112,11 @@ if [ $SKIPPED_FONTS -lt $TOTAL_FONTS ]; then
   echo "Updating font cache..."
   echo "=========================================="
   if command -v fc-cache >/dev/null 2>&1; then
-    # Create cache directory if it doesn't exist
     mkdir -p "$HOME/.cache/fontconfig"
-
-    # Try to update cache, but don't fail if it errors
     if fc-cache -f "$FONTS_DIR" 2>&1; then
       echo "✓ Font cache updated"
     else
       echo "⚠ Font cache update had issues, but fonts are installed"
-      echo "  Fonts will still work after restarting applications"
     fi
   else
     echo "⚠ fc-cache not found. You may need to restart applications"
@@ -160,17 +153,5 @@ fi
 echo ""
 echo "Installed Nerd Font families:"
 fc-list : family | grep -i "Nerd Font" | sort -u | head -20
-echo ""
-echo "Usage examples:"
-echo "  - Ghostty: font-family = Iosevka Term Nerd Font"
-echo "  - Terminal: Set font to 'JetBrains Mono Nerd Font'"
-echo "  - Nvim: Set font to 'Hack Nerd Font Mono'"
-echo ""
-echo "To see all installed fonts: fc-list | grep 'Nerd Font'"
-
-if [ $SKIPPED_FONTS -lt $TOTAL_FONTS ]; then
-  echo ""
-  echo "⚠ Note: Restart applications for new fonts to take effect"
-fi
 
 exit 0

@@ -69,7 +69,7 @@ if [ -s "$NVM_DIR/nvm.sh" ]; then
   # shellcheck disable=SC1091
   \. "$NVM_DIR/nvm.sh"
 
-  if command -v node &> /dev/null; then
+  if command -v node &>/dev/null; then
     NODE_BIN=$(command -v node)
     echo "✓ node found at $NODE_BIN ($(node --version))"
   else
@@ -77,7 +77,7 @@ if [ -s "$NVM_DIR/nvm.sh" ]; then
     MISSING_DEPS+=("node")
   fi
 
-  if command -v npm &> /dev/null; then
+  if command -v npm &>/dev/null; then
     NPM_BIN=$(command -v npm)
     echo "✓ npm found at $NPM_BIN"
   else
@@ -116,29 +116,11 @@ echo "Installing pnpm packages..."
 echo "----------------------------"
 
 if [ -n "$PNPM_BIN" ]; then
-  # mermaid-cli for diagram rendering
-  echo "→ @mermaid-js/mermaid-cli"
-  if "$PNPM_BIN" install -g @mermaid-js/mermaid-cli 2> /dev/null; then
-    echo "  ✓ installed"
-    INSTALLED_DEPS+=("mermaid-cli")
-  else
-    echo "  ✗ failed"
-  fi
-
   # neovim node package
   echo "→ neovim (node provider)"
-  if "$PNPM_BIN" install -g neovim 2> /dev/null; then
+  if "$PNPM_BIN" install -g neovim 2>/dev/null; then
     echo "  ✓ installed"
     INSTALLED_DEPS+=("neovim-node")
-  else
-    echo "  ✗ failed"
-  fi
-
-  # mcp-hub for AI features
-  echo "→ mcp-hub"
-  if "$PNPM_BIN" add -g mcp-hub@latest 2> /dev/null; then
-    echo "  ✓ installed"
-    INSTALLED_DEPS+=("mcp-hub")
   else
     echo "  ✗ failed"
   fi
@@ -146,7 +128,7 @@ elif [ -n "$NPM_BIN" ]; then
   echo "Using npm as fallback..."
 
   echo "→ neovim (node provider)"
-  if "$NPM_BIN" install -g neovim 2> /dev/null; then
+  if "$NPM_BIN" install -g neovim 2>/dev/null; then
     echo "  ✓ installed via npm"
     INSTALLED_DEPS+=("neovim-node")
   else
@@ -170,7 +152,7 @@ if [ -n "$CARGO_BIN" ]; then
   if [ -f "$CARGO_HOME/bin/fd" ]; then
     echo "  ✓ already installed"
     INSTALLED_DEPS+=("fd-find")
-  elif "$CARGO_BIN" install fd-find 2> /dev/null; then
+  elif "$CARGO_BIN" install fd-find 2>/dev/null; then
     echo "  ✓ installed"
     INSTALLED_DEPS+=("fd-find")
   else
@@ -182,7 +164,7 @@ if [ -n "$CARGO_BIN" ]; then
   if [ -f "$CARGO_HOME/bin/tree-sitter" ]; then
     echo "  ✓ already installed"
     INSTALLED_DEPS+=("tree-sitter-cli")
-  elif "$CARGO_BIN" install --locked tree-sitter-cli 2> /dev/null; then
+  elif "$CARGO_BIN" install --locked tree-sitter-cli 2>/dev/null; then
     echo "  ✓ installed"
     INSTALLED_DEPS+=("tree-sitter-cli")
   else
@@ -194,7 +176,7 @@ if [ -n "$CARGO_BIN" ]; then
   if [ -f "$CARGO_HOME/bin/rg" ]; then
     echo "  ✓ already installed"
     INSTALLED_DEPS+=("ripgrep")
-  elif "$CARGO_BIN" install ripgrep 2> /dev/null; then
+  elif "$CARGO_BIN" install ripgrep 2>/dev/null; then
     echo "  ✓ installed"
     INSTALLED_DEPS+=("ripgrep")
   else
@@ -215,10 +197,10 @@ echo "----------------------------"
 if [ -n "$PIP_BIN" ]; then
   # pynvim for Python provider
   echo "→ pynvim"
-  if "$PIP_BIN" show pynvim &> /dev/null; then
+  if "$PIP_BIN" show pynvim &>/dev/null; then
     echo "  ✓ already installed"
     INSTALLED_DEPS+=("pynvim")
-  elif "$PIP_BIN" install pynvim 2> /dev/null; then
+  elif "$PIP_BIN" install pynvim 2>/dev/null; then
     echo "  ✓ installed"
     INSTALLED_DEPS+=("pynvim")
   else
@@ -239,10 +221,10 @@ echo "----------------------------"
 if [ -n "$GEM_BIN" ]; then
   # neovim gem for Ruby provider
   echo "→ neovim (ruby provider)"
-  if "$GEM_BIN" list neovim 2> /dev/null | grep -q "^neovim "; then
+  if "$GEM_BIN" list neovim 2>/dev/null | grep -q "^neovim "; then
     echo "  ✓ already installed"
     INSTALLED_DEPS+=("neovim-ruby")
-  elif "$GEM_BIN" install neovim 2> /dev/null; then
+  elif "$GEM_BIN" install neovim 2>/dev/null; then
     echo "  ✓ installed"
     INSTALLED_DEPS+=("neovim-ruby")
   else
@@ -293,14 +275,13 @@ echo "Verification:"
 echo "----------------------------"
 
 # Check individual tools
-[ -f "$PNPM_HOME/mmdc" ] && echo "✓ mermaid-cli" || echo "✗ mermaid-cli"
 [ -f "$CARGO_HOME/bin/fd" ] && echo "✓ fd-find" || echo "✗ fd-find"
 [ -f "$CARGO_HOME/bin/tree-sitter" ] && echo "✓ tree-sitter-cli" || echo "✗ tree-sitter-cli"
 [ -f "$CARGO_HOME/bin/rg" ] && echo "✓ ripgrep" || echo "✗ ripgrep"
-[ -n "$PIP_BIN" ] && "$PIP_BIN" show pynvim &> /dev/null && echo "✓ pynvim" || echo "✗ pynvim"
-[ -n "$GEM_BIN" ] && "$GEM_BIN" list neovim 2> /dev/null | grep -q "^neovim " && echo "✓ neovim gem" || echo "⚠ neovim gem"
-[ -n "$NODE_BIN" ] && echo "✓ node: $(node --version 2> /dev/null || echo 'error')" || echo "✗ node"
-[ -n "$NPM_BIN" ] && echo "✓ npm: $(npm --version 2> /dev/null || echo 'error')" || echo "✗ npm"
+[ -n "$PIP_BIN" ] && "$PIP_BIN" show pynvim &>/dev/null && echo "✓ pynvim" || echo "✗ pynvim"
+[ -n "$GEM_BIN" ] && "$GEM_BIN" list neovim 2>/dev/null | grep -q "^neovim " && echo "✓ neovim gem" || echo "⚠ neovim gem"
+[ -n "$NODE_BIN" ] && echo "✓ node: $(node --version 2>/dev/null || echo 'error')" || echo "✗ node"
+[ -n "$NPM_BIN" ] && echo "✓ npm: $(npm --version 2>/dev/null || echo 'error')" || echo "✗ npm"
 
 echo ""
 echo "Next steps:"
@@ -308,8 +289,5 @@ echo "----------------------------"
 echo "1. Your nvim config is managed by chezmoi"
 echo "2. Launch nvim - LazyVim will install plugins on first run"
 echo "3. Run :checkhealth in nvim to verify everything works"
-echo ""
-echo "If node/npm commands aren't found, restart your shell or run:"
-echo '      source "$HOME/.bashrc"'
 echo ""
 echo "Installation complete!"

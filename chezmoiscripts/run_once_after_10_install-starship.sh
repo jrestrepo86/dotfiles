@@ -44,6 +44,3 @@ fi
 echo ""
 echo "Starship installation complete!"
 echo "Binary location: $STARSHIP_BIN"
-echo ""
-echo "Your .bash_profile already includes cargo/bin in PATH"
-echo "Configuration will be handled by the next script"

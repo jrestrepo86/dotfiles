@@ -1,18 +1,16 @@
 #!/bin/bash
-# Starship configuration - depends on miniconda (01) and conda packages (02)
+# Starship configuration - depends on starship (10)
 set -e
 
 BASHRC="$HOME/.bashrc"
-STARSHIP_INIT='eval "$(starship init bash)"'
 STARSHIP_CONFIG="$HOME/.config/starship.toml"
 CARGO_HOME="$HOME/.local/share/cargo"
 STARSHIP_BIN="$CARGO_HOME/bin/starship"
 
-# Check if starship is installed via conda
+# Check if starship is installed
 if [ ! -f "$STARSHIP_BIN" ]; then
   echo "Error: starship not found at $STARSHIP_BIN"
-  echo "Make sure the conda packages installation script ran successfully"
-  echo "You can manually install it with: conda install -c conda-forge starship"
+  echo "Make sure the starship installation script ran successfully"
   exit 1
 fi
 
@@ -34,29 +32,8 @@ else
   fi
 fi
 
-# Check if starship init is already in .bashrc
-if [ -f "$BASHRC" ] && grep -qF "$STARSHIP_INIT" "$BASHRC"; then
-  echo "Starship already configured in .bashrc"
-  exit 0
-fi
-
-echo "Adding starship initialization to .bashrc..."
-
-# Add starship init to .bashrc
-if [ -f "$BASHRC" ]; then
-  echo "" >> "$BASHRC"
-  echo "# Initialize starship prompt" >> "$BASHRC"
-  echo "$STARSHIP_INIT" >> "$BASHRC"
-  echo "✓ Starship initialization added to .bashrc"
-else
-  echo "Warning: .bashrc not found, creating it"
-  echo "# Initialize starship prompt" > "$BASHRC"
-  echo "$STARSHIP_INIT" >> "$BASHRC"
-fi
-
 echo ""
 echo "Starship configured successfully"
 echo "Starship version: $("$STARSHIP_BIN" --version)"
 echo ""
-echo "To see changes, run: source ~/.bashrc"
-echo "Or restart your shell"
+echo "Starship init is already in .bashrc"

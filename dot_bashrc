@@ -1,6 +1,6 @@
 #!/bin/bash
 # Main bash configuration file
-# All settings, functions, and aliases should be here
+# Optimized for fast startup with lazy-loading
 
 ##-----------------------------------------------------
 ## Shell Options
@@ -16,7 +16,7 @@ HISTSIZE=1000
 HISTFILESIZE=2000
 
 ##-----------------------------------------------------
-## Path settings
+## Path settings (fast - just exports, no evals)
 ##-----------------------------------------------------
 
 ## bin
@@ -26,17 +26,10 @@ export PATH="$HOME/.local/bin:$PATH"
 export PNPM_HOME="$HOME/.local/share/pnpm"
 export PATH="$PNPM_HOME:$PATH"
 
-## nvm
-export NVM_DIR="$HOME/.local/share/nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
-
-## rust/cargo
+## rust/cargo (fast - just source env file and PATH)
 export CARGO_HOME="$HOME/.local/share/cargo"
 export RUSTUP_HOME="$HOME/.local/share/rustup"
-if [ -f "$CARGO_HOME/env" ]; then
-  source "$CARGO_HOME/env"
-fi
+[ -f "$CARGO_HOME/env" ] && . "$CARGO_HOME/env"
 export PATH="$CARGO_HOME/bin:$PATH"
 
 ## go
@@ -45,29 +38,92 @@ export PATH="$GOROOT/bin:$PATH"
 export GOPATH="$HOME/.local/go"
 export PATH="$GOPATH/bin:$PATH"
 
-## Ruby - Safe version detection
-export RBENV_ROOT="$HOME/.local/share/rbenv"
-export GEM_HOME="$HOME/.local/share/gem"
-export PATH="$GEM_HOME/ruby/3.2.0/bin:$PATH"
-export PATH="$RBENV_ROOT/bin:$PATH"
-eval "$(rbenv init - bash)"
-
-## miniconda
-export CONDA_DIR="$HOME/.local/share/miniconda/bin"
-export PATH="$CONDA_DIR:$PATH"
-
-## kitty (local installation)
-export KITTY_DIR="$HOME/.local/share/kitty"
-if [ -d "$KITTY_DIR/bin" ]; then
-  export PATH="$KITTY_DIR/bin:$PATH"
-fi
+## miniconda - PATH only, no activation (packages available immediately)
+export CONDA_DIR="$HOME/.local/share/miniconda"
+export PATH="$CONDA_DIR/bin:$PATH"
 
 ## opencode
-export PATH=$HOME/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"
 
 ## Lm-Studio
 export LM_API_KEY="lm-studio"
-export PATH="$HOME/.lmstudio/bin:$PATH:"
+export PATH="$HOME/.lmstudio/bin:$PATH"
+
+##-----------------------------------------------------
+## NVM - Lazy Loading (saves ~500ms-1s)
+##-----------------------------------------------------
+export NVM_DIR="$HOME/.local/share/nvm"
+
+# Lazy load nvm - only initialize when needed
+_nvm_lazy_load() {
+  unset -f nvm node npm npx
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+}
+
+# Create wrapper functions that lazy-load nvm
+nvm() {
+  _nvm_lazy_load
+  nvm "$@"
+}
+node() {
+  _nvm_lazy_load
+  node "$@"
+}
+npm() {
+  _nvm_lazy_load
+  npm "$@"
+}
+npx() {
+  _nvm_lazy_load
+  npx "$@"
+}
+
+# Add default node to PATH for non-interactive scripts (if exists)
+if [ -d "$NVM_DIR/versions/node" ]; then
+  NODE_DEFAULT="$NVM_DIR/alias/default"
+  if [ -L "$NODE_DEFAULT" ] || [ -f "$NODE_DEFAULT" ]; then
+    DEFAULT_VERSION=$(cat "$NODE_DEFAULT" 2> /dev/null || basename "$(readlink -f "$NODE_DEFAULT")" 2> /dev/null)
+    if [ -n "$DEFAULT_VERSION" ] && [ -d "$NVM_DIR/versions/node/$DEFAULT_VERSION" ]; then
+      export PATH="$NVM_DIR/versions/node/$DEFAULT_VERSION/bin:$PATH"
+    fi
+  else
+    # Fallback: use the latest installed version
+    LATEST_NODE=$(ls -v "$NVM_DIR/versions/node/" 2> /dev/null | tail -1)
+    [ -n "$LATEST_NODE" ] && export PATH="$NVM_DIR/versions/node/$LATEST_NODE/bin:$PATH"
+  fi
+fi
+
+##-----------------------------------------------------
+## Ruby/rbenv - Lazy Loading (saves ~200-500ms)
+##-----------------------------------------------------
+export RBENV_ROOT="$HOME/.local/share/rbenv"
+export GEM_HOME="$HOME/.local/share/gem"
+
+# Add ruby binaries to PATH directly (fast, no eval)
+if [ -d "$RBENV_ROOT/versions" ]; then
+  # Find the global ruby version or use latest
+  if [ -f "$RBENV_ROOT/version" ]; then
+    RUBY_VERSION=$(cat "$RBENV_ROOT/version")
+  else
+    RUBY_VERSION=$(ls -v "$RBENV_ROOT/versions/" 2> /dev/null | tail -1)
+  fi
+  if [ -n "$RUBY_VERSION" ] && [ -d "$RBENV_ROOT/versions/$RUBY_VERSION" ]; then
+    export PATH="$RBENV_ROOT/versions/$RUBY_VERSION/bin:$PATH"
+    export PATH="$GEM_HOME/ruby/${RUBY_VERSION%.*}.0/bin:$PATH"
+  fi
+fi
+export PATH="$RBENV_ROOT/bin:$PATH"
+
+# Lazy load rbenv - only when rbenv command is used
+_rbenv_lazy_load() {
+  unset -f rbenv
+  eval "$(command "$RBENV_ROOT/bin/rbenv" init - bash)"
+}
+rbenv() {
+  _rbenv_lazy_load
+  rbenv "$@"
+}
 
 ##-----------------------------------------------------
 ## Editor
@@ -82,32 +138,18 @@ export VISUAL="$EDITOR"
 GIT_COMPLETION="$HOME/.git-completion.bash"
 if [[ -e "$GIT_COMPLETION" ]]; then
   if [[ -L "$GIT_COMPLETION" ]]; then
-    # Resolve symlink to its actual path
     GIT_COMPLETION=$(readlink -f "$GIT_COMPLETION")
   fi
-
   if [[ -f "$GIT_COMPLETION" && -r "$GIT_COMPLETION" ]]; then
-    # shellcheck disable=SC1090  # Can't verify dynamic source
-    if source "$GIT_COMPLETION"; then
-      : # Successfully loaded
-    else
-      echo "Note: Git completion loaded but returned error" >&2
-    fi
-  else
-    echo "Warning: Git completion file exists but is not readable" >&2
+    . "$GIT_COMPLETION" 2> /dev/null
   fi
-else
-  # Fallback to system installation if available
-  SYSTEM_GIT_COMPLETION="/usr/share/bash-completion/completions/git"
-  if [[ -f "$SYSTEM_GIT_COMPLETION" && -r "$SYSTEM_GIT_COMPLETION" ]]; then
-    # shellcheck disable=SC1090
-    source "$SYSTEM_GIT_COMPLETION"
-  fi
+elif [[ -f "/usr/share/bash-completion/completions/git" ]]; then
+  . "/usr/share/bash-completion/completions/git"
 fi
 
 export GITHUB_USERNAME="jrestrepo86"
 
-# Token file locations (using proper path expansion)
+# Token file locations
 GITHUB_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/gitHubToken.txt"
 BITBUCKET_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/bitBucketToken.txt"
 
@@ -115,11 +157,7 @@ BITBUCKET_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/bitBucketToken.txt"
 gtoken() {
   if [[ -r "$GITHUB_TOKEN_FILE" ]]; then
     cat "$GITHUB_TOKEN_FILE"
-    if command -v xclip &> /dev/null; then
-      xclip -sel clip < "$GITHUB_TOKEN_FILE"
-    else
-      echo "xclip not found - token not copied to clipboard" >&2
-    fi
+    command -v xclip &> /dev/null && xclip -sel clip < "$GITHUB_TOKEN_FILE"
   else
     echo "GitHub token file not found or not readable" >&2
     return 1
@@ -129,11 +167,7 @@ gtoken() {
 btoken() {
   if [[ -r "$BITBUCKET_TOKEN_FILE" ]]; then
     cat "$BITBUCKET_TOKEN_FILE"
-    if command -v xclip &> /dev/null; then
-      xclip -sel clip < "$BITBUCKET_TOKEN_FILE"
-    else
-      echo "xclip not found - token not copied to clipboard" >&2
-    fi
+    command -v xclip &> /dev/null && xclip -sel clip < "$BITBUCKET_TOKEN_FILE"
   else
     echo "Bitbucket token file not found or not readable" >&2
     return 1
@@ -145,56 +179,45 @@ btoken() {
 ##-----------------------------------------------------
 ## cdf() - cd into the directory of the selected file
 cdf() {
-  local file
-  local dir
+  local file dir
   file=$(fzf -e -q "$*") && dir=$(dirname "$file") && cd "$dir" || return
 }
 
 ## cdh() - cd from home
 cdh() {
-  local file
-  local dir
+  local file dir
   file=$(locate ~ | fzf -e -q "$*") && dir=$(dirname "$file") && cd "$dir" || return
 }
 
 ## ff() - Fast find directory
 ff() {
   local query="${*:-}" dir
-  dir="$(
-    fd -H -t d . "$HOME" 2> /dev/null \
-      | fzf +m --prompt='cd > ' --query="$query" --select-1 --exit-0
-  )" || return
+  dir="$(fd -H -t d . "$HOME" 2> /dev/null | fzf +m --prompt='cd > ' --query="$query" --select-1 --exit-0)" || return
   [ -n "$dir" ] && cd "$dir" || return
 }
 
-## Load conda hook on demand, no auto-activation
+## Conda environment management (lazy - no init at startup)
 _load_conda_hook() {
   local shname="$(basename "$SHELL")"
-  eval "$("conda" "shell.${shname}" "hook" 2> /dev/null)" \
-    || { base="$(conda info --base 2> /dev/null)" \
-      && [ -f "$base/etc/profile.d/conda.sh" ] \
-      && . "$base/etc/profile.d/conda.sh"; } || return 1
+  eval "$("$CONDA_DIR/bin/conda" "shell.${shname}" "hook" 2> /dev/null)" \
+    || { [ -f "$CONDA_DIR/etc/profile.d/conda.sh" ] && . "$CONDA_DIR/etc/profile.d/conda.sh"; } || return 1
 }
 
 ## Fast activate conda env
 cenv() {
   _load_conda_hook || {
-    echo "Run: conda init $(basename "$SHELL")"
+    echo "Conda not available"
     return 1
   }
   local env
-  env="$(
-    conda info --envs 2> /dev/null \
-      | awk 'NF && $1 !~ /^#/ {print $1}' \
-      | fzf +m --prompt='conda env > ' --select-1 --exit-0
-  )" || return
+  env="$("$CONDA_DIR/bin/conda" info --envs 2> /dev/null | awk 'NF && $1 !~ /^#/ {print $1}' | fzf +m --prompt='conda env > ' --select-1 --exit-0)" || return
   [ -n "$env" ] && conda activate "$env"
 }
 
 ## Fast deactivate: one level (default), --to-base, or --all
 cdeact() {
   _load_conda_hook || {
-    echo "Run: conda init $(basename "$SHELL")" >&2
+    echo "Conda not available" >&2
     return 1
   }
   case "${1:-one}" in
@@ -217,26 +240,19 @@ cdeact() {
 }
 
 ## fast config pick
-cfgpick() {
+cfg() {
   local base="${XDG_CONFIG_HOME:-$HOME/.config}"
   [ -d "$base" ] || {
     echo "No config dir: $base" >&2
     return 1
   }
-  fdfind -H -t d . "$base" -d 1 2> /dev/null \
-    | sort \
-    | fzf +m --prompt='~/.config/ ' --select-1 --exit-0 \
-      --preview 'ls -la {} | sed -n "1,200p"'
-}
-
-cfg() {
   local p
-  p="$(cfgpick)" || return
+  p="$(fd -H -t d . "$base" -d 1 2> /dev/null | sort | fzf +m --prompt='~/.config/ ' --select-1 --exit-0 --preview 'ls -la {} | head -20')" || return
   [ -n "$p" ] && cd "$p"
 }
 
 ## matlab
-function matlab() {
+matlab() {
   export GTK_PATH='/usr/lib/x86_64-linux-gnu/gtk-2.0'
   command matlab "$@"
 }
@@ -244,21 +260,16 @@ function matlab() {
 ##-----------------------------------------------------
 ## Alias
 ##-----------------------------------------------------
-## Load .bash_aliases if it exists (even if it's a symlink)
-if [ -f ~/.bash_aliases ] || [ -L ~/.bash_aliases ]; then
-  # shellcheck disable=SC1090
-  . ~/.bash_aliases
-fi
+## Load .bash_aliases if it exists
+[ -f ~/.bash_aliases ] || [ -L ~/.bash_aliases ] && . ~/.bash_aliases
 
 ##-----------------------------------------------------
-## Bash completion
+## Bash completion (load only if interactive)
 ##-----------------------------------------------------
-if ! shopt -oq posix; then
+if [[ $- == *i* ]] && ! shopt -oq posix; then
   if [ -f /usr/share/bash-completion/bash_completion ]; then
-    # shellcheck disable=SC1091
     . /usr/share/bash-completion/bash_completion
   elif [ -f /etc/bash_completion ]; then
-    # shellcheck disable=SC1091
     . /etc/bash_completion
   fi
 fi
@@ -266,45 +277,36 @@ fi
 ##-----------------------------------------------------
 ## Julia
 ##-----------------------------------------------------
-# !! Contents within this block are managed by juliaup !!
 case ":$PATH:" in
   *:/home/jrestrepo/.juliaup/bin:*) ;;
-  *)
-    export PATH=/home/jrestrepo/.juliaup/bin${PATH:+:${PATH}}
-    ;;
+  *) export PATH="/home/jrestrepo/.juliaup/bin${PATH:+:${PATH}}" ;;
 esac
 
 ##-----------------------------------------------------
-## Ollama autocomplete
+## Ollama autocomplete (only if ollama exists)
 ##-----------------------------------------------------
-_complete_ollama() {
-  local cur prev words cword
-  _init_completion -n : || return
-
-  if [[ $cword -eq 1 ]]; then
-    # Safe fixed list of commands - doesn't need mapfile
-    local -a commands=(
-      serve create show run push pull list ps cp rm help
-    )
-    # Use printf to avoid word splitting
-    mapfile -t COMPREPLY < <(compgen -W "${commands[*]}" -- "$cur")
-  elif [[ $cword -eq 2 ]]; then
-    case "$prev" in
-      run | show | cp | rm | push | list)
-        local -a models
-        # Use mapfile to safely read command output into array
-        mapfile -t models < <(ollama list 2> /dev/null | tail -n +2 | cut -d $'\t' -f 1)
-        # Safely generate completions
-        mapfile -t COMPREPLY < <(compgen -W "${models[*]}" -- "$cur")
-        __ltrim_colon_completions "$cur"
-        ;;
-    esac
-  fi
-}
-complete -F _complete_ollama ollama
+if command -v ollama &> /dev/null; then
+  _complete_ollama() {
+    local cur prev words cword
+    _init_completion -n : || return
+    if [[ $cword -eq 1 ]]; then
+      local -a commands=(serve create show run push pull list ps cp rm help)
+      mapfile -t COMPREPLY < <(compgen -W "${commands[*]}" -- "$cur")
+    elif [[ $cword -eq 2 ]]; then
+      case "$prev" in
+        run | show | cp | rm | push | list)
+          local -a models
+          mapfile -t models < <(ollama list 2> /dev/null | tail -n +2 | cut -d $'\t' -f 1)
+          mapfile -t COMPREPLY < <(compgen -W "${models[*]}" -- "$cur")
+          __ltrim_colon_completions "$cur"
+          ;;
+      esac
+    fi
+  }
+  complete -F _complete_ollama ollama
+fi
 
 ##-----------------------------------------------------
 ## Starship Prompt
 ##-----------------------------------------------------
-# Initialize starship prompt
 eval "$(starship init bash)"
