@@ -3,7 +3,7 @@
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- Supports: Python, LaTeX, YAML, JSON, HTML/CSS/Django, JS/TS, Docker,
 --           Markdown, Bash, Lua, SQL, XML, TOML
--- All configurations verified and tested
+-- FIXED: Inline hints disabled at start, tsserver → ts_ls
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 return {
@@ -16,101 +16,22 @@ return {
 			-- Get schemastore once (safe check)
 			local has_schemastore, schemastore = pcall(require, "schemastore")
 
-			-- -- ═══════════════════════════════════════════════════════════════════════════
-			-- -- PYTHON - Dual setup: basedpyright for types, ruff_lsp for linting
-			-- -- ═══════════════════════════════════════════════════════════════════════════
-			--
-			-- opts.servers.pyright = false -- ⭐ This one line fixes it!
-			-- opts.servers.basedpyright = {
-			-- 	settings = {
-			-- 		basedpyright = {
-			-- 			analysis = {
-			-- 				typeCheckingMode = "basic", -- "off" | "basic" | "strict"
-			-- 				autoSearchPaths = true,
-			-- 				useLibraryCodeForTypes = true,
-			-- 				diagnosticMode = "workspace",
-			-- 				autoImportCompletions = false,
-			-- 				-- IMPORTANT: Don't report unused imports/variables
-			-- 				diagnosticSeverityOverrides = {
-			-- 					reportUnusedImport = "none",
-			-- 					reportUnusedVariable = "none",
-			-- 					reportUnusedClass = "none",
-			-- 					reportUnusedFunction = "none",
-			-- 				},
-			-- 				stubPath = vim.fn.stdpath("data") .. "/lazy/python-type-stubs",
-			-- 			},
-			-- 		},
-			-- 	},
-			-- }
-			--
-			-- opts.servers.ruff = {
-			-- 	on_attach = function(client, bufnr)
-			-- 		-- Disable hover in favor of basedpyright
-			-- 		client.server_capabilities.hoverProvider = false
-			-- 	end,
-			-- 	init_options = {
-			-- 		settings = {
-			-- 			-- Ignore unused imports in ruff too
-			-- 			args = {
-			-- 				"--ignore=F401", -- unused imports
-			-- 				"--ignore=F403", -- star imports
-			-- 			},
-			-- 		},
-			-- 	},
-			-- }
-
 			-- ═══════════════════════════════════════════════════════════════════════════
-			-- REGISTER CUSTOM PYREFLY SERVER
+			-- GLOBAL INLAY HINTS - DISABLED AT START
 			-- ═══════════════════════════════════════════════════════════════════════════
-			local lspconfig = require("lspconfig")
-			local configs = require("lspconfig.configs")
-
-			-- Only register if not already available
-			if not configs.pyrefly then
-				configs.pyrefly = {
-					default_config = {
-						cmd = { "pyrefly", "lsp" },
-						filetypes = { "python" },
-						root_dir = function(fname)
-							return lspconfig.util.root_pattern(
-								"pyrefly.toml",
-								"pyproject.toml",
-								"setup.py",
-								"setup.cfg",
-								"requirements.txt",
-								"Pipfile",
-								".git"
-							)(fname)
-						end,
-						single_file_support = true,
-						settings = {},
-					},
-					docs = {
-						description = [[
-https://pyrefly.org/
-
-Pyrefly is a faster Python type checker and language server written in Rust.
-Developed by Meta for handling large Python codebases.
-						]],
-					},
-				}
-			end
+			opts.inlay_hints = opts.inlay_hints or {}
+			opts.inlay_hints.enabled = false -- ⭐ DISABLED AT START
 
 			-- ═══════════════════════════════════════════════════════════════════════════
 			-- PYTHON - Multi-LSP Strategy:
 			-- • basedpyright: Type checking, hover, navigation, diagnostics
-			-- • pyrefly: Fast completions ONLY
 			-- • ruff: Linting diagnostics (formatting via conform)
 			-- ═══════════════════════════════════════════════════════════════════════════
 
 			opts.servers.pyright = false -- ⭐ Disable regular pyright
 
-			-- basedpyright: Type checking + LSP features (NO completions)
+			-- basedpyright: Type checking + LSP features
 			opts.servers.basedpyright = {
-				on_attach = function(client, bufnr)
-					-- Explicitly disable completions - pyrefly handles this
-					client.server_capabilities.completionProvider = false
-				end,
 				settings = {
 					basedpyright = {
 						analysis = {
@@ -118,7 +39,7 @@ Developed by Meta for handling large Python codebases.
 							autoSearchPaths = true,
 							useLibraryCodeForTypes = true,
 							diagnosticMode = "workspace",
-							autoImportCompletions = false, -- ⭐ Disabled for pyrefly
+							autoImportCompletions = true,
 							-- IMPORTANT: Don't report unused imports/variables
 							diagnosticSeverityOverrides = {
 								reportUnusedImport = "none",
@@ -130,24 +51,6 @@ Developed by Meta for handling large Python codebases.
 						},
 					},
 				},
-			}
-
-			-- pyrefly: Fast completions ONLY
-			opts.servers.pyrefly = {
-				on_attach = function(client, bufnr)
-					-- Disable everything except completions
-					client.server_capabilities.hoverProvider = false
-					client.server_capabilities.definitionProvider = false
-					client.server_capabilities.referencesProvider = false
-					client.server_capabilities.documentSymbolProvider = false
-					client.server_capabilities.workspaceSymbolProvider = false
-					client.server_capabilities.renameProvider = false
-					client.server_capabilities.documentFormattingProvider = false
-					client.server_capabilities.documentRangeFormattingProvider = false
-					client.server_capabilities.codeActionProvider = false
-					client.server_capabilities.signatureHelpProvider = false
-					-- completionProvider stays enabled (default: true)
-				end,
 			}
 
 			-- ruff: Linting diagnostics ONLY
@@ -272,7 +175,6 @@ Developed by Meta for handling large Python codebases.
 						validate = true,
 						hover = true,
 						completion = true,
-						-- Custom tags for CloudFormation, Ansible, etc.
 						customTags = {
 							"!reference sequence",
 							"!And",
@@ -335,7 +237,7 @@ Developed by Meta for handling large Python codebases.
 					css = {
 						validate = true,
 						lint = {
-							unknownAtRules = "ignore", -- For Tailwind and modern CSS
+							unknownAtRules = "ignore",
 						},
 					},
 					scss = {
@@ -389,9 +291,9 @@ Developed by Meta for handling large Python codebases.
 			}
 
 			-- ═══════════════════════════════════════════════════════════════════════════
-			-- JAVASCRIPT/TYPESCRIPT
+			-- JAVASCRIPT/TYPESCRIPT - FIXED: ts_ls instead of tsserver
 			-- ═══════════════════════════════════════════════════════════════════════════
-			opts.servers.tsserver = {
+			opts.servers.ts_ls = {
 				settings = {
 					typescript = {
 						inlayHints = {
@@ -472,7 +374,7 @@ Developed by Meta for handling large Python codebases.
 						},
 						telemetry = { enable = false },
 						hint = {
-							enable = true,
+							enable = true, -- Available when you toggle on
 							arrayIndex = "Auto",
 							await = true,
 							paramName = "All",
@@ -490,14 +392,7 @@ Developed by Meta for handling large Python codebases.
 			opts.servers.sqls = {
 				settings = {
 					sqls = {
-						connections = {
-							-- Add your database connections here
-							-- Example:
-							-- {
-							--   driver = "postgresql",
-							--   dataSourceName = "host=localhost port=5432 user=postgres dbname=mydb sslmode=disable",
-							-- }
-						},
+						connections = {},
 					},
 				},
 			}
@@ -515,6 +410,7 @@ Developed by Meta for handling large Python codebases.
 			opts.servers.lemminx = {
 				filetypes = { "xml", "xsd", "xsl", "xslt", "svg" },
 			}
+
 			-- ═══════════════════════════════════════════════════════════════════════════
 			-- MATLAB
 			-- ═══════════════════════════════════════════════════════════════════════════
@@ -522,9 +418,9 @@ Developed by Meta for handling large Python codebases.
 				settings = {
 					MATLAB = {
 						indexWorkspace = false,
-						installPath = "/usr/local/MATLAB/R2024b", -- Adjust to your version
+						installPath = "/usr/local/MATLAB/R2024b",
 						matlabConnectionTiming = "onStart",
-						telemetry = false, -- Disable telemetry
+						telemetry = false,
 					},
 				},
 			}
@@ -553,11 +449,10 @@ Developed by Meta for handling large Python codebases.
 			})
 
 			-- ═══════════════════════════════════════════════════════════════════════════
-			-- SETUP HANDLERS (ensures all servers start properly)
+			-- SETUP HANDLERS
 			-- ═══════════════════════════════════════════════════════════════════════════
 			opts.setup = opts.setup or {}
 
-			-- Default setup for all servers
 			opts.setup["*"] = function(server, server_opts)
 				require("lspconfig")[server].setup(server_opts)
 			end
