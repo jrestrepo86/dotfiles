@@ -306,6 +306,8 @@ if command -v ollama &> /dev/null; then
   complete -F _complete_ollama ollama
 fi
 
+export GEMINI_API_KEY="AIzaSyBOM_awbt5OzTq5TmNtmPEfSfhMy9-mu3I"
+
 ##-----------------------------------------------------
 ## Starship Prompt
 ##-----------------------------------------------------
