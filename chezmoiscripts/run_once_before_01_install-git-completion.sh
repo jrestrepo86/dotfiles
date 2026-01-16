@@ -16,14 +16,14 @@ echo "Downloading git completion script..."
 # Get latest version from git repository
 GIT_COMPLETION_URL="https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash"
 
-if ! wget -q "$GIT_COMPLETION_URL" -O "$GIT_COMPLETION_FILE"; then
+if ! wget -4 "$GIT_COMPLETION_URL" -O "$GIT_COMPLETION_FILE"; then
   echo "Error: Failed to download git completion"
   echo "Trying fallback URL..."
 
   # Fallback to a specific stable version
   GIT_COMPLETION_URL="https://raw.githubusercontent.com/git/git/v2.43.0/contrib/completion/git-completion.bash"
 
-  if ! wget -q "$GIT_COMPLETION_URL" -O "$GIT_COMPLETION_FILE"; then
+  if ! wget -4 "$GIT_COMPLETION_URL" -O "$GIT_COMPLETION_FILE"; then
     echo "Error: Failed to download git completion from fallback URL"
     exit 1
   fi
