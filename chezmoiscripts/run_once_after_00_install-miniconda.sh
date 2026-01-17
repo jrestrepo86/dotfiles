@@ -30,7 +30,7 @@ esac
 
 # Download installer
 echo "Downloading $INSTALLER..."
-if ! wget "https://repo.anaconda.com/miniconda/$INSTALLER"; then
+if ! wget -4 "https://repo.anaconda.com/miniconda/$INSTALLER"; then
   echo "Error: Failed to download Miniconda installer"
   exit 1
 fi

@@ -94,7 +94,7 @@ aarch64 | arm64)
     # Fallback to AppImage
     NVIM_URL="https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim.appimage"
 
-    if wget -q --show-progress "$NVIM_URL" -O nvim.appimage; then
+    if wget -4 --show-progress "$NVIM_URL" -O nvim.appimage; then
       chmod +x nvim.appimage
 
       # Try to extract AppImage (works even without FUSE)

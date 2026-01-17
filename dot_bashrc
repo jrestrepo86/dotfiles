@@ -126,6 +126,24 @@ rbenv() {
 }
 
 ##-----------------------------------------------------
+## Conda initialization
+##-----------------------------------------------------
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('$CONDA_DIR/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "$CONDA_DIR/etc/profile.d/conda.sh" ]; then
+        . "$CONDA_DIR/etc/profile.d/conda.sh"
+    else
+        export PATH="$CONDA_DIR/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
+##-----------------------------------------------------
 ## Editor
 ##-----------------------------------------------------
 export EDITOR=nvim
@@ -196,30 +214,15 @@ ff() {
   [ -n "$dir" ] && cd "$dir" || return
 }
 
-## Conda environment management (lazy - no init at startup)
-_load_conda_hook() {
-  local shname="$(basename "$SHELL")"
-  eval "$("$CONDA_DIR/bin/conda" "shell.${shname}" "hook" 2> /dev/null)" \
-    || { [ -f "$CONDA_DIR/etc/profile.d/conda.sh" ] && . "$CONDA_DIR/etc/profile.d/conda.sh"; } || return 1
-}
-
-## Fast activate conda env
+## Fast activate conda env with fzf selector
 cenv() {
-  _load_conda_hook || {
-    echo "Conda not available"
-    return 1
-  }
   local env
-  env="$("$CONDA_DIR/bin/conda" info --envs 2> /dev/null | awk 'NF && $1 !~ /^#/ {print $1}' | fzf +m --prompt='conda env > ' --select-1 --exit-0)" || return
+  env="$(conda info --envs 2> /dev/null | awk 'NF && $1 !~ /^#/ {print $1}' | fzf +m --prompt='conda env > ' --select-1 --exit-0)" || return
   [ -n "$env" ] && conda activate "$env"
 }
 
 ## Fast deactivate: one level (default), --to-base, or --all
 cdeact() {
-  _load_conda_hook || {
-    echo "Conda not available" >&2
-    return 1
-  }
   case "${1:-one}" in
     --all)
       while [ "${CONDA_SHLVL:-0}" -gt 0 ]; do conda deactivate || break; done

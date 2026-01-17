@@ -44,9 +44,10 @@ GO_ARCHIVE="go${GO_VERSION}.${OS}-${ARCH}.tar.gz"
 GO_URL="https://go.dev/dl/${GO_ARCHIVE}"
 
 echo "Installing Go ${GO_VERSION} for ${OS}-${ARCH}..."
+echo "$url: ${GO_URL}"
 
 # Download Go
-if ! wget "$GO_URL"; then
+if ! wget -4 "$GO_URL"; then
   echo "Error: Failed to download Go from $GO_URL"
   exit 1
 fi

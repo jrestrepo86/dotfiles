@@ -1,6 +1,7 @@
 #!/bin/bash
 # Ruby 3.2.6 installation via rbenv - TRULY NO SUDO REQUIRED
 # Uses Ruby 3.2.x which is compatible with libcrypt.so.1 (no symlink needed!)
+# FIXED: Explicitly sets CC/CXX for conda compilers
 set -e
 
 export RBENV_ROOT="$HOME/.local/share/rbenv"
@@ -32,7 +33,7 @@ if [ ! -f "$CONDA_BIN" ]; then
   echo "Location expected: $MINICONDA_DIR"
   echo ""
   echo "To install Miniconda, run:"
-  echo "  ./chezmoiscripts/run_once_after_01_install-conda.sh"
+  echo "  ./chezmoiscripts/run_once_after_00_install-miniconda.sh"
   echo ""
   echo "Or install manually:"
   echo "  wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
@@ -56,13 +57,13 @@ REQUIRED_DEPS=(
   readline     # Command line editing
   zlib         # Compression library
   bzip2        # Compression library
-  yaml         # YAML parser
+  yaml      # YAML parser (corrected from 'yaml')
   libffi       # Foreign function interface
 )
 
 DEPS_TO_INSTALL=()
 for pkg in "${REQUIRED_DEPS[@]}"; do
-  if ! "$CONDA_BIN" list "^${pkg}$" 2> /dev/null | grep -q "^${pkg} "; then
+  if ! "$CONDA_BIN" list "^${pkg}$" 2>/dev/null | grep -q "^${pkg} "; then
     DEPS_TO_INSTALL+=("$pkg")
   fi
 done
@@ -91,7 +92,7 @@ echo ""
 echo "Verifying conda dependencies..."
 MISSING_DEPS=()
 for pkg in gcc_linux-64 openssl readline; do
-  if ! "$CONDA_BIN" list "^${pkg}$" 2> /dev/null | grep -q "^${pkg} "; then
+  if ! "$CONDA_BIN" list "^${pkg}$" 2>/dev/null | grep -q "^${pkg} "; then
     MISSING_DEPS+=("$pkg")
   fi
 done
@@ -108,18 +109,36 @@ echo ""
 ##################################################
 echo "Configuring build environment..."
 
+export PATH="$MINICONDA_DIR/bin:$PATH"
 export CPPFLAGS="-I$MINICONDA_DIR/include"
 export LDFLAGS="-L$MINICONDA_DIR/lib -Wl,-rpath,$MINICONDA_DIR/lib"
 export PKG_CONFIG_PATH="$MINICONDA_DIR/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH"
-export PATH="$MINICONDA_DIR/bin:$PATH"
+
+# 🔧 FIX: Explicitly set compilers (conda uses prefixed names)
+export CC="$MINICONDA_DIR/bin/x86_64-conda-linux-gnu-gcc"
+export CXX="$MINICONDA_DIR/bin/x86_64-conda-linux-gnu-g++"
+export AR="$MINICONDA_DIR/bin/x86_64-conda-linux-gnu-ar"
+export RANLIB="$MINICONDA_DIR/bin/x86_64-conda-linux-gnu-ranlib"
+export LD="$MINICONDA_DIR/bin/x86_64-conda-linux-gnu-ld"
 
 # Point Ruby configure to conda libraries
 export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$MINICONDA_DIR --with-readline-dir=$MINICONDA_DIR --with-zlib-dir=$MINICONDA_DIR --with-libyaml-dir=$MINICONDA_DIR --disable-install-doc"
 
 echo "✓ Build environment configured"
+echo "  CC: $CC"
+echo "  CXX: $CXX"
 echo "  CPPFLAGS: $CPPFLAGS"
 echo "  LDFLAGS: $LDFLAGS"
 echo "  RUBY_CONFIGURE_OPTS: $RUBY_CONFIGURE_OPTS"
+
+# Verify compiler works
+if [ -f "$CC" ]; then
+  echo "  Compiler test: $($CC --version | head -1)"
+else
+  echo "  ⚠ Warning: Compiler not found at $CC"
+  echo "  Available compilers in conda:"
+  ls -la "$MINICONDA_DIR/bin/" | grep -i gcc || echo "    (none found)"
+fi
 echo ""
 
 ##################################################
@@ -127,9 +146,9 @@ echo ""
 ##################################################
 if [ ! -d "$RBENV_ROOT" ]; then
   echo "Installing rbenv..."
-  if git clone https://github.com/rbenv/rbenv.git "$RBENV_ROOT" 2> /dev/null; then
+  if git clone https://github.com/rbenv/rbenv.git "$RBENV_ROOT" 2>/dev/null; then
     # Try to compile dynamic bash extension for speed (optional)
-    cd "$RBENV_ROOT" && src/configure && make -C src 2> /dev/null || true
+    cd "$RBENV_ROOT" && src/configure && make -C src 2>/dev/null || true
     echo "✓ rbenv installed at $RBENV_ROOT"
   else
     echo "Error: Failed to clone rbenv repository"
@@ -145,7 +164,7 @@ fi
 RUBY_BUILD_DIR="$RBENV_ROOT/plugins/ruby-build"
 if [ ! -d "$RUBY_BUILD_DIR" ]; then
   echo "Installing ruby-build plugin..."
-  if git clone https://github.com/rbenv/ruby-build.git "$RUBY_BUILD_DIR" 2> /dev/null; then
+  if git clone https://github.com/rbenv/ruby-build.git "$RUBY_BUILD_DIR" 2>/dev/null; then
     echo "✓ ruby-build installed"
   else
     echo "Error: Failed to clone ruby-build repository"
@@ -155,7 +174,7 @@ else
   echo "✓ ruby-build already installed"
   # Update ruby-build to get latest Ruby definitions
   echo "  Updating ruby-build..."
-  cd "$RUBY_BUILD_DIR" && git pull -q 2> /dev/null || true
+  cd "$RUBY_BUILD_DIR" && git pull -q 2>/dev/null || true
 fi
 
 ##################################################
@@ -207,13 +226,13 @@ else
     echo "   conda list | grep -E '(gcc|openssl|readline|yaml)'"
     echo ""
     echo "3. Check if compiler works:"
-    echo "   $MINICONDA_DIR/bin/gcc --version"
+    echo "   $CC --version"
     echo ""
-    echo "4. Try manual installation with more verbose output:"
-    echo "   RUBY_CONFIGURE_OPTS='$RUBY_CONFIGURE_OPTS' rbenv install $RUBY_VERSION -v"
+    echo "4. Verify compiler location:"
+    echo "   ls -la $MINICONDA_DIR/bin/ | grep gcc"
     echo ""
-    echo "5. If all else fails, try an even older Ruby version:"
-    echo "   rbenv install 3.1.4"
+    echo "5. Try manual installation with environment variables:"
+    echo "   CC='$CC' CXX='$CXX' RUBY_CONFIGURE_OPTS='$RUBY_CONFIGURE_OPTS' rbenv install $RUBY_VERSION -v"
     echo ""
     exit 1
   fi
@@ -230,7 +249,7 @@ echo "Configuring gem installation..."
 mkdir -p "$GEM_HOME"
 
 if [ ! -f "$HOME/.gemrc" ]; then
-  cat > "$HOME/.gemrc" << 'EOF'
+  cat >"$HOME/.gemrc" <<'EOF'
 # Gem configuration - user installation, no documentation
 gem: --user-install --no-document
 install: --no-document
@@ -254,45 +273,45 @@ RUBY_BIN="$RBENV_ROOT/versions/$RUBY_VERSION/bin/ruby"
 GEM_BIN="$RBENV_ROOT/versions/$RUBY_VERSION/bin/gem"
 
 # Test basic Ruby execution
-if "$RUBY_BIN" -e "puts 'Ruby executable works!'" > /dev/null 2>&1; then
+if "$RUBY_BIN" -e "puts 'Ruby executable works!'" >/dev/null 2>&1; then
   echo "✓ Ruby executable: OK"
 else
   echo "✗ Ruby executable: FAILED"
 fi
 
 # Test OpenSSL extension
-if "$RUBY_BIN" -e "require 'openssl'" 2> /dev/null; then
+if "$RUBY_BIN" -e "require 'openssl'" 2>/dev/null; then
   echo "✓ OpenSSL extension: OK"
   # Show OpenSSL version
-  OPENSSL_VER=$("$RUBY_BIN" -e "require 'openssl'; puts OpenSSL::OPENSSL_VERSION" 2> /dev/null)
+  OPENSSL_VER=$("$RUBY_BIN" -e "require 'openssl'; puts OpenSSL::OPENSSL_VERSION" 2>/dev/null)
   echo "  OpenSSL version: $OPENSSL_VER"
 else
   echo "✗ OpenSSL extension: FAILED (SSL connections won't work)"
 fi
 
 # Test psych (YAML) extension
-if "$RUBY_BIN" -e "require 'psych'" 2> /dev/null; then
+if "$RUBY_BIN" -e "require 'psych'" 2>/dev/null; then
   echo "✓ YAML extension (psych): OK"
 else
   echo "⚠ YAML extension (psych): Not available (some gems may fail)"
 fi
 
 # Test zlib extension
-if "$RUBY_BIN" -e "require 'zlib'" 2> /dev/null; then
+if "$RUBY_BIN" -e "require 'zlib'" 2>/dev/null; then
   echo "✓ Zlib extension: OK"
 else
   echo "✗ Zlib extension: FAILED (gem installation may fail)"
 fi
 
 # Test readline extension
-if "$RUBY_BIN" -e "require 'readline'" 2> /dev/null; then
+if "$RUBY_BIN" -e "require 'readline'" 2>/dev/null; then
   echo "✓ Readline extension: OK"
 else
   echo "⚠ Readline extension: Not available (irb history won't work)"
 fi
 
 # Test libcrypt compatibility (should work with .so.1!)
-if "$RUBY_BIN" -e "require 'digest'" 2> /dev/null; then
+if "$RUBY_BIN" -e "require 'digest'" 2>/dev/null; then
   echo "✓ Digest/Crypt: OK (libcrypt.so.1 compatible!)"
 else
   echo "✗ Digest/Crypt: FAILED"
