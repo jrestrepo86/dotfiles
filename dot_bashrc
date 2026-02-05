@@ -132,13 +132,13 @@ rbenv() {
 # !! Contents within this block are managed by 'conda init' !!
 __conda_setup="$('$CONDA_DIR/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
+  eval "$__conda_setup"
 else
-    if [ -f "$CONDA_DIR/etc/profile.d/conda.sh" ]; then
-        . "$CONDA_DIR/etc/profile.d/conda.sh"
-    else
-        export PATH="$CONDA_DIR/bin:$PATH"
-    fi
+  if [ -f "$CONDA_DIR/etc/profile.d/conda.sh" ]; then
+    . "$CONDA_DIR/etc/profile.d/conda.sh"
+  else
+    export PATH="$CONDA_DIR/bin:$PATH"
+  fi
 fi
 unset __conda_setup
 # <<< conda initialize <<<
@@ -308,8 +308,6 @@ if command -v ollama &> /dev/null; then
   }
   complete -F _complete_ollama ollama
 fi
-
-export GEMINI_API_KEY="AIzaSyBOM_awbt5OzTq5TmNtmPEfSfhMy9-mu3I"
 
 ##-----------------------------------------------------
 ## Starship Prompt
