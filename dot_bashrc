@@ -78,20 +78,10 @@ npx() {
   _nvm_lazy_load
   npx "$@"
 }
-
 # Add default node to PATH for non-interactive scripts (if exists)
 if [ -d "$NVM_DIR/versions/node" ]; then
-  NODE_DEFAULT="$NVM_DIR/alias/default"
-  if [ -L "$NODE_DEFAULT" ] || [ -f "$NODE_DEFAULT" ]; then
-    DEFAULT_VERSION=$(cat "$NODE_DEFAULT" 2> /dev/null || basename "$(readlink -f "$NODE_DEFAULT")" 2> /dev/null)
-    if [ -n "$DEFAULT_VERSION" ] && [ -d "$NVM_DIR/versions/node/$DEFAULT_VERSION" ]; then
-      export PATH="$NVM_DIR/versions/node/$DEFAULT_VERSION/bin:$PATH"
-    fi
-  else
-    # Fallback: use the latest installed version
-    LATEST_NODE=$(ls -v "$NVM_DIR/versions/node/" 2> /dev/null | tail -1)
-    [ -n "$LATEST_NODE" ] && export PATH="$NVM_DIR/versions/node/$LATEST_NODE/bin:$PATH"
-  fi
+  LATEST_NODE=$(ls -v "$NVM_DIR/versions/node/" 2> /dev/null | tail -1)
+  [ -n "$LATEST_NODE" ] && export PATH="$NVM_DIR/versions/node/$LATEST_NODE/bin:$PATH"
 fi
 
 ##-----------------------------------------------------
