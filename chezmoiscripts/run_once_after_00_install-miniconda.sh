@@ -58,6 +58,10 @@ else
   exit 1
 fi
 
+# Accept Anaconda ToS non-interactively (conda 24.3+ requires this)
+echo "Accepting conda Terms of Service..."
+"$MINICONDA_DIR/bin/conda" tos accept --override-channels --channel defaults 2>/dev/null || true
+
 echo ""
 echo "Note: Conda is available at $MINICONDA_DIR/bin/conda"
 echo "Your .bash_profile should already have the correct PATH configuration"

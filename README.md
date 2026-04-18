@@ -264,7 +264,6 @@ Scripts run in alphabetical order. The naming convention ensures proper dependen
 | `08_install-lazyvim.sh`          | LazyVim dependencies | 01, 02b, 03, 05           |
 | `08a_install-starship.sh`        | Starship prompt      | 03 (cargo)                |
 | `09_configure-starship.sh`       | Starship config      | 08a                       |
-| `10_install-datascience.sh`      | Python data science  | 01                        |
 | `11_install-nerd-fonts.sh`       | Nerd Fonts           | None                      |
 | `12_install-backup-terminals.sh` | Kitty + Alacritty    | 03 (for Alacritty)        |
 | `14_install-desktop-apps.sh`     | Desktop apps         | None (requires sudo)      |

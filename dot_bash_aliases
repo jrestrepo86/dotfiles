@@ -20,3 +20,4 @@ alias c0='cdeact --all'     # fully deactivate
 alias cb='cdeact --to-base' # back to base
 
 alias venvactivate='source $(find . -name "activate" -type f)'
+mc() { command mc "$PWD" "$PWD" "$@"; }

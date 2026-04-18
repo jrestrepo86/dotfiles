@@ -302,4 +302,6 @@ fi
 ##-----------------------------------------------------
 ## Starship Prompt
 ##-----------------------------------------------------
-eval "$(starship init bash)"
+if [ -z "$MC_SID" ] && command -v starship &>/dev/null; then
+    eval "$(starship init bash)"
+fi
