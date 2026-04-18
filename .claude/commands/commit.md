@@ -14,7 +14,10 @@ Rules:
 - Do NOT stash anything — the user manages stashing manually
 - Do NOT commit anything yet
 
-After proposing the message, use AskUserQuestion with three options:
+After proposing the message, use AskUserQuestion. The question text MUST include the proposed commit message, e.g.:
+  "Commit with this message?\n\n`docs: move architecture diagram to dedicated file`"
+
+Provide three options:
 1. **approve** — commit with the proposed message
 2. **edit** — user provides a different message
 3. **cancel** — do nothing
