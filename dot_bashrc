@@ -160,6 +160,8 @@ export GITHUB_USERNAME="jrestrepo86"
 # Token file locations
 GITHUB_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/gitHubToken.txt"
 BITBUCKET_TOKEN_FILE="$HOME/Dropbox/scripts/tokens/bitBucketToken.txt"
+GEMINI_KEY_FILE="$HOME/Dropbox/scripts/tokens/geminiKey.txt"
+[[ -r "$GEMINI_KEY_FILE" ]] && export GEMINI_API_KEY="$(cat "$GEMINI_KEY_FILE")"
 
 ## Secure token handling functions
 gtoken() {
