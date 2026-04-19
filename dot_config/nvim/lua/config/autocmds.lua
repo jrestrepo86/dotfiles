@@ -67,7 +67,7 @@ cmd({ "BufEnter", "BufWinEnter", "FileType", "WinEnter" }, {
 		vim.opt.wrap = false
 		vim.opt.sidescrolloff = 2 -- Makes sure there are always eight lines of context
 		vim.opt.sidescroll = 5
-		vim.bo.textwidth = 87
+		vim.bo.textwidth = 88
 		vim.wo.colorcolumn = "+1"
 	end,
 })

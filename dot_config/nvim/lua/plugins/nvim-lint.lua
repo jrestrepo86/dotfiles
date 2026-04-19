@@ -6,9 +6,6 @@ return {
 	"mfussenegger/nvim-lint",
 	opts = {
 		linters_by_ft = {
-			-- Python: ruff with F401 (unused imports) ignored
-			python = { "ruff", "mypy" },
-
 			-- Web
 			html = { "djlint" },
 			htmldjango = { "djlint" },
@@ -40,71 +37,6 @@ return {
 
 		-- Linter-specific configuration
 		linters = {
-			-- Python: Ruff - IGNORE F401 (unused imports)
-			ruff = {
-				cmd = "ruff",
-				args = {
-					"check",
-					"--force-exclude",
-					"--quiet",
-					"--stdin-filename",
-					function()
-						return vim.api.nvim_buf_get_name(0)
-					end,
-					"--no-fix",
-					"--output-format",
-					"json",
-					"--ignore",
-					"F401", -- IGNORE unused imports
-					"--ignore",
-					"F403", -- IGNORE star imports (optional)
-					"-",
-				},
-				stdin = true,
-				stream = "stdout",
-				ignore_exitcode = true,
-				parser = function(output, bufnr)
-					if output == "" then
-						return {}
-					end
-
-					local ok, decoded = pcall(vim.json.decode, output)
-					if not ok then
-						return {}
-					end
-
-					local diagnostics = {}
-					for _, item in ipairs(decoded) do
-						table.insert(diagnostics, {
-							lnum = item.location.row - 1,
-							col = item.location.column - 1,
-							end_lnum = item.end_location.row - 1,
-							end_col = item.end_location.column - 1,
-							severity = vim.diagnostic.severity.WARN,
-							message = item.message,
-							source = "ruff",
-							code = item.code,
-						})
-					end
-					return diagnostics
-				end,
-			},
-
-			-- Python: mypy type checking
-			mypy = {
-				args = {
-					"--show-column-numbers",
-					"--show-error-end",
-					"--hide-error-codes",
-					"--hide-error-context",
-					"--no-color-output",
-					"--no-error-summary",
-					"--no-pretty",
-					"--ignore-missing-imports",
-					"--follow-imports=silent",
-				},
-			},
-
 			-- Bash: shellcheck
 			shellcheck = {
 				args = {

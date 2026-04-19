@@ -12,6 +12,15 @@ Personal dotfiles managed with [chezmoi](https://www.chezmoi.io/). Files here ar
 - Ask clarifying questions before making assumptions
 - When you are unsure, say so
 
+## Planning Workflow
+
+When planning a new feature or fix, after plan approval use AskUserQuestion to ask:
+"Do you want to apply the changes now, or save the plan to ./changes_workspace first?"
+
+- If the user chooses to save first: write the plan to `./changes_workspace/<short_feature_name>.md`
+  using snake_case (e.g. `nvim_markdown.md`, `mc_starship_fix.md`), then proceed with changes.
+- If the user chooses to apply directly: proceed with code changes immediately.
+
 ## Key chezmoi Commands
 
 ```bash

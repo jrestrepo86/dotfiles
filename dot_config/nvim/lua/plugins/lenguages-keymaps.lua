@@ -25,9 +25,11 @@ vim.api.nvim_create_autocmd("FileType", {
 		-- Interactive Python
 		map("n", "<localleader>i", ":w<CR>:term python3 -i %<CR>", { desc = "Interactive Python" })
 
-		-- Testing
-		map("n", "<localleader>t", ":!pytest %<CR>", { desc = "Run pytest on file" })
-		map("n", "<localleader>T", ":!pytest<CR>", { desc = "Run all tests" })
+		-- Testing (neotest)
+		map("n", "<localleader>t", function() require("neotest").run.run() end, { desc = "Run nearest test" })
+		map("n", "<localleader>T", function() require("neotest").run.run(vim.fn.expand("%")) end, { desc = "Run file tests" })
+		map("n", "<localleader>ts", function() require("neotest").summary.toggle() end, { desc = "Test summary panel" })
+		map("n", "<localleader>to", function() require("neotest").output_panel.toggle() end, { desc = "Test output panel" })
 
 		-- Django management
 		map("n", "<localleader>dm", ":!python manage.py ", { desc = "Django manage.py" })
@@ -35,9 +37,6 @@ vim.api.nvim_create_autocmd("FileType", {
 		map("n", "<localleader>ds", ":!python manage.py shell<CR>", { desc = "Django shell" })
 		map("n", "<localleader>dd", ":!python manage.py makemigrations<CR>", { desc = "Django makemigrations" })
 		map("n", "<localleader>dM", ":!python manage.py migrate<CR>", { desc = "Django migrate" })
-
-		-- Type checking
-		map("n", "<localleader>m", ":!mypy %<CR>", { desc = "MyPy type check" })
 
 		-- Debugging
 		map("n", "<localleader>b", ":lua require'dap'.toggle_breakpoint()<CR>", { desc = "Toggle breakpoint" })

@@ -28,9 +28,7 @@ return {
 			vim.list_extend(opts.ensure_installed, {
 				"basedpyright", -- Type checking
 				"ruff", -- Fast linting
-				"mypy", -- Type checking (additional)
 				"debugpy", -- DAP for Python
-				"pyrefly", -- Fast completions
 			})
 
 			-- LaTeX

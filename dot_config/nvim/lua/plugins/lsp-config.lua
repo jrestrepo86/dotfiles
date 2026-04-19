@@ -122,7 +122,6 @@ return {
 						},
 						enabled = {
 							"latex",
-							"markdown",
 							"restructuredtext",
 						},
 						dictionary = {
@@ -153,7 +152,7 @@ return {
 						},
 					},
 				},
-				filetypes = { "tex", "latex", "markdown", "rst" },
+				filetypes = { "tex", "latex", "rst" },
 			}
 
 			-- ═══════════════════════════════════════════════════════════════════════════
