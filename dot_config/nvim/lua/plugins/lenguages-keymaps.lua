@@ -22,27 +22,22 @@ vim.api.nvim_create_autocmd("FileType", {
 		-- Run in terminal (split)
 		map("n", "<localleader>R", ":w<CR>:split | term python3 %<CR>", { desc = "Run in terminal" })
 
-		-- Interactive Python (toggleable split)
-		map("n", "<localleader>i", function()
-			local buf_name = "python3-interactive"
-			for _, win in ipairs(vim.api.nvim_list_wins()) do
-				local buf = vim.api.nvim_win_get_buf(win)
-				if vim.api.nvim_buf_get_name(buf):find(buf_name, 1, true) then
-					vim.api.nvim_win_close(win, false)
-					return
-				end
-			end
-			vim.cmd("w")
-			vim.cmd("split")
-			vim.cmd("term python3 -i " .. vim.fn.expand("%:p"))
-			vim.api.nvim_buf_set_name(0, buf_name)
-		end, { desc = "Toggle interactive Python split" })
+		-- Interactive Python
+		map("n", "<localleader>i", ":w<CR>:split | term python3 -i %<CR>", { desc = "Interactive Python" })
 
 		-- Testing (neotest)
-		map("n", "<localleader>t", function() require("neotest").run.run() end, { desc = "Run nearest test" })
-		map("n", "<localleader>T", function() require("neotest").run.run(vim.fn.expand("%")) end, { desc = "Run file tests" })
-		map("n", "<localleader>ts", function() require("neotest").summary.toggle() end, { desc = "Test summary panel" })
-		map("n", "<localleader>to", function() require("neotest").output_panel.toggle() end, { desc = "Test output panel" })
+		map("n", "<localleader>t", function()
+			require("neotest").run.run()
+		end, { desc = "Run nearest test" })
+		map("n", "<localleader>T", function()
+			require("neotest").run.run(vim.fn.expand("%"))
+		end, { desc = "Run file tests" })
+		map("n", "<localleader>ts", function()
+			require("neotest").summary.toggle()
+		end, { desc = "Test summary panel" })
+		map("n", "<localleader>to", function()
+			require("neotest").output_panel.toggle()
+		end, { desc = "Test output panel" })
 
 		-- Django management
 		map("n", "<localleader>dm", ":!python manage.py ", { desc = "Django manage.py" })
